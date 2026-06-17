@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="login-page">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login - Industrial Data Server</title>
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, proxy-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <link rel="stylesheet" href="/static/css/login.css" />
+  <link rel="stylesheet" href="/static/css/card.css" />
+
+<body>
+  <div class="container">
+    <div class="card card--narrow">
+      <div class="topbar">
+        <div>
+          <h1>Login</h1>
+          <p>Enter your credentials to access the system.</p>
+        </div>
+
+      </div>
+
+      <div class="spacer"></div>
+
+      <div id="msg" class="msg" style="display:none"></div>
+
+      <form id="loginForm" autocomplete="off">
+        <!-- Anti-autofill decoys (some browsers ignore autocomplete="off") -->
+        <input type="text" name="fake_username" autocomplete="username" tabindex="-1"
+          style="position:absolute;left:-9999px;top:-9999px;height:1px;width:1px;opacity:0" />
+        <input type="password" name="fake_password" autocomplete="current-password" tabindex="-1"
+          style="position:absolute;left:-9999px;top:-9999px;height:1px;width:1px;opacity:0" />
+
+        <label for="username">Username</label>
+        <input id="username" name="ids_username" autocomplete="off" autocapitalize="none" autocorrect="off"
+          spellcheck="false" required />
+
+        <label for="password">Password</label>
+        <input id="password" name="ids_password" type="password" autocomplete="new-password" autocapitalize="none"
+          autocorrect="off" spellcheck="false" required />
+
+        <div class="spacer"></div>
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+  <script>
+    const msg = document.getElementById('msg');
+    const form = document.getElementById('loginForm');
+
+    function showMsg(text, type) {
+      msg.style.display = 'block';
+      msg.className = 'msg ' + (type || '');
+      msg.textContent = text;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.style.display = 'none';
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await IdsApp.apiFetch('/api/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ username, password }),
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          showMsg(data.error || 'Login failed', 'error');
+          return;
+        }
+
+        window.location.href = 'http://192.168.1.2:5000/dashboard.html';
+        //window.location.href = 'http://192.168.1.2:5000/dashboard.html';
+
+
+        //
+      } catch (err) {
+
+        showMsg('Network error', 'error');
+      }
+    });
+  </script>
+</body>
+
+</html>

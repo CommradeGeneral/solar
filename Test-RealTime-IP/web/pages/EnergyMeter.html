@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCADA - EnergyMeter Monitoring</title>
+    <link rel="stylesheet" href="/css/EnergyMeter.css">
+    <link rel="stylesheet" href="/css/Historical.css">
+    <link rel="stylesheet" href="/css/chart.css">
+    <link rel="stylesheet" href="/css/multi_chart.css">
+    <link rel="stylesheet" href="/css/header-clock.css">
+    <!-- Font: Cairo -->
+    <link rel="stylesheet" href="/css/cairo.css">
+ <link rel="stylesheet" href="/css/menu-tree.css">
+    <link rel="stylesheet" href="/css/loading-overlay.css">
+    <!-- Chart.js Libraries (local, no external CDN dependency) -->
+    <script src="/vendor/chart.umd.min.js"></script>
+    <script src="/vendor/chartjs-plugin-zoom.min.js"></script>
+    <script src="/vendor/chartjs-plugin-annotation.min.js"></script>
+    <script src="/vendor/hammer.min.js"></script>
+    <script src="/vendor/xlsx.full.min.js"></script>
+</head>
+<body>
+    <script src="/js/menu-tree-init.js"></script>
+    <aside id="menuTree" class="mt" aria-label="Project menu"></aside>
+    <div id="menuTreeBackdrop" class="mt-backdrop" hidden></div>
+
+    <!-- Header -->
+    <header class="header">
+        <button type="button" class="mt-open-btn" id="menuTreeOpenBtn" aria-label="Open menu"></button>
+
+
+        <div class="header-logos">
+            <div class="logo1">
+                <img src="/images/Asorc.png" alt="Asorc">
+            </div>
+            <div class="logo2">
+                <img src="/images/Enppi.png" alt="Enppi">
+            </div>
+            <div class="logo3">
+                <img src="/images/infinty.png" alt="infinty">
+            </div>
+            
+        </div>
+        <div class="header-left">
+            <button class="back-btn" id="btn-back">&larr; Back</button>
+            <h1 class="page-title">EnergyMeter <span id="EM-label">#1</span></h1>
+            <div class="EnergyMeter-selector">
+                <div class="index-control">
+                    <button class="idx-btn" id="btn-dec">◀</button>
+                    <input type="number" id="EM-index" class="idx-input" value="1" min="1">
+                    <button class="idx-btn" id="btn-inc">▶</button>
+                </div>
+                <span class="idx-range" id="idx-range">(1 - 66)</span>
+            </div>
+        </div>
+       
+        <div class="hc" data-header-clock>
+            <span class="hc-ico" aria-hidden="true">⏱</span>
+            <span class="hc-time" aria-label="Current time">--:--</span>
+        </div>
+        
+        <div class="header-right"></div>
+    </header>
+
+    <!-- Main -->
+    <main class="main" id="main">
+        <div class="loading-box" id="loading">
+            <div class="spinner"></div>
+            <p>Loading EnergyMeter data...</p>
+        </div>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/loading-overlay.js"></script>
+    <script src="/js/EnergyMeter.js"></script>
+    <script src="/js/connection-alert.js"></script>
+    <script src="/js/chart.js"></script>
+    <script src="/js/multi_chart.js"></script>
+    <script src="/js/menu-tree.js"></script>
+    <script src="/js/header-clock.js"></script>
+</body>
+</html>

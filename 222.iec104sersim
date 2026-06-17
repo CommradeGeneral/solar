@@ -1,0 +1,573 @@
+21.06.018
+2
+Running
+127.0.0.1
+2404
+0.0.0.0
+FALSE
+12
+8
+30
+15
+10
+20
+10000
+5000
+50
+0
+TRUE
+5
+1
+2
+3
+4
+5
+TRUE
+FALSE
+FALSE
+C:\Program Files (x86)\FreyrSCADA Embedded Solution\IEC 60870-5-104 Server Simulator
+10
+FALSE
+127.0.0.1
+2405
+0.0.0.0
+TRUE
+TRUE
+TRUE
+COT_TWO_BYTE
+0
+0.0.0.0
+0.0.0.0
+0.0.0.0
+0.0.0.0
+10
+1
+Measured Scaled
+M_ME_NB_1 = 11
+1
+2
+INROGEN = 20
+0
+STATUS_ONLY
+0
+PARAMETER_NONE
+1
+0
+2
+Measured Scaled
+M_ME_NB_1 = 11
+91
+2
+INROGEN = 20
+0
+STATUS_ONLY
+0
+PARAMETER_NONE
+2
+0
+3
+Measured Scaled
+M_ME_NB_1 = 11
+181
+2
+INROGEN = 20
+0
+STATUS_ONLY
+0
+PARAMETER_NONE
+3
+0
+4
+Measured Scaled
+M_ME_NB_1 = 11
+271
+2
+INROGEN = 20
+0
+STATUS_ONLY
+0
+PARAMETER_NONE
+4
+0
+5
+Single Point
+M_SP_NA_1 = 1
+1
+1
+INROGEN = 20
+0
+STATUS_ONLY
+0
+PARAMETER_NONE
+5
+0
+6
+Single Point
+M_SP_NA_1 = 1
+11
+2
+INROGEN = 20
+0
+STATUS_ONLY
+0
+PARAMETER_NONE
+5
+0
+7
+Integrated Totals
+M_IT_NA_1 = 15
+93
+4
+REQCOGEN= 37
+0
+STATUS_ONLY
+0
+PARAMETER_NONE
+2
+0
+8
+Single Point
+M_SP_NA_1 = 1
+41
+10
+INROGEN = 20
+0
+STATUS_ONLY
+0
+PARAMETER_NONE
+3
+0
+9
+Single Point
+M_SP_NA_1 = 1
+1
+10
+INROGEN = 20
+0
+STATUS_ONLY
+0
+PARAMETER_NONE
+3
+0
+12
+1
+1
+M_ME_NB_1
+1
+11
+GD
+ 13:33:07:990 - 30/04/2026 
+0
+0
+0
+
+2
+1
+M_ME_NB_1
+2
+11
+GD
+ 13:33:07:991 - 30/04/2026 
+0
+0
+0
+
+4
+2
+M_ME_NB_1
+92
+22
+GD
+ 13:33:07:991 - 30/04/2026 
+0
+0
+0
+
+6
+3
+M_ME_NB_1
+182
+33
+GD
+ 13:33:07:992 - 30/04/2026 
+0
+0
+0
+
+8
+4
+M_ME_NB_1
+272
+44
+GD
+ 13:33:07:993 - 30/04/2026 
+0
+0
+0
+
+10
+5
+M_SP_NA_1
+11
+1
+GD
+ 13:33:07:994 - 30/04/2026 
+0
+0
+0
+
+16
+3
+M_SP_NA_1
+41
+1
+GD
+ 13:33:07:995 - 30/04/2026 
+0
+0
+0
+
+17
+3
+M_SP_NA_1
+42
+1
+GD
+ 13:33:07:996 - 30/04/2026 
+0
+0
+0
+
+18
+3
+M_SP_NA_1
+43
+1
+GD
+ 13:33:07:997 - 30/04/2026 
+0
+0
+0
+
+26
+3
+M_SP_NA_1
+1
+1
+GD
+ 13:33:07:997 - 30/04/2026 
+0
+0
+0
+
+27
+3
+M_SP_NA_1
+2
+1
+GD
+ 13:33:07:998 - 30/04/2026 
+0
+0
+0
+
+28
+3
+M_SP_NA_1
+3
+1
+GD
+ 13:33:07:999 - 30/04/2026 
+0
+0
+0
+
+Running
+127.0.0.2
+2405
+0.0.0.0
+FALSE
+12
+8
+30
+15
+10
+20
+10000
+5000
+50
+0
+TRUE
+5
+1
+2
+3
+4
+5
+TRUE
+FALSE
+FALSE
+C:\Users\HA\Desktop
+10
+FALSE
+127.0.0.1
+2405
+0.0.0.0
+TRUE
+TRUE
+TRUE
+COT_TWO_BYTE
+0
+0.0.0.0
+0.0.0.0
+0.0.0.0
+0.0.0.0
+6
+1
+Measured Scaled
+M_ME_NB_1 = 11
+1
+20
+INROGEN = 20
+0
+STATUS_ONLY
+0
+PARAMETER_NONE
+1
+0
+2
+Measured Scaled
+M_ME_NB_1 = 11
+21
+20
+INROGEN = 20
+0
+STATUS_ONLY
+0
+PARAMETER_NONE
+2
+0
+3
+Measured Scaled
+M_ME_NB_1 = 11
+41
+20
+INROGEN = 20
+0
+STATUS_ONLY
+0
+PARAMETER_NONE
+3
+0
+4
+Measured Scaled
+M_ME_NB_1 = 11
+61
+20
+INROGEN = 20
+0
+STATUS_ONLY
+0
+PARAMETER_NONE
+4
+0
+5
+Measured Scaled
+M_ME_NB_1 = 11
+81
+20
+INROGEN = 20
+0
+STATUS_ONLY
+0
+PARAMETER_NONE
+5
+0
+17
+1
+1
+M_ME_NB_1
+1
+10
+GD 
+ 13:43:36:585 - 30/04/2026 
+0
+0
+0
+
+3
+1
+M_ME_NB_1
+3
+20
+GD 
+ 13:43:40:625 - 30/04/2026 
+0
+0
+0
+
+5
+1
+M_ME_NB_1
+5
+30
+GD 
+ 13:43:44:481 - 30/04/2026 
+0
+0
+0
+
+7
+1
+M_ME_NB_1
+7
+40
+GD 
+ 13:43:48:705 - 30/04/2026 
+0
+0
+0
+
+9
+1
+M_ME_NB_1
+9
+33
+GD 
+ 13:43:54:937 - 30/04/2026 
+0
+0
+0
+
+11
+1
+M_ME_NB_1
+11
+40
+GD 
+ 13:44:00:489 - 30/04/2026 
+0
+0
+0
+
+12
+1
+M_ME_NB_1
+12
+66
+GD 
+ 13:44:04:225 - 30/04/2026 
+0
+0
+0
+
+21
+2
+M_ME_NB_1
+21
+454
+GD 
+ 13:44:09:600 - 30/04/2026 
+0
+0
+0
+
+24
+2
+M_ME_NB_1
+24
+524
+GD 
+ 13:44:13:801 - 30/04/2026 
+0
+0
+0
+
+26
+2
+M_ME_NB_1
+26
+780
+GD 
+ 13:44:22:832 - 30/04/2026 
+0
+0
+0
+
+28
+2
+M_ME_NB_1
+28
+547
+GD 
+ 13:44:18:385 - 30/04/2026 
+0
+0
+0
+
+31
+2
+M_ME_NB_1
+31
+1
+GD 
+ 13:44:29:937 - 30/04/2026 
+0
+0
+0
+
+32
+2
+M_ME_NB_1
+32
+1
+GD 
+ 13:44:39:176 - 30/04/2026 
+0
+0
+0
+
+34
+2
+M_ME_NB_1
+34
+1
+GD 
+ 13:44:43:648 - 30/04/2026 
+0
+0
+0
+
+41
+3
+M_ME_NB_1
+41
+999
+GD 
+ 13:44:57:776 - 30/04/2026 
+0
+0
+0
+
+44
+3
+M_ME_NB_1
+44
+1250
+GD 
+ 13:45:04:529 - 30/04/2026 
+0
+0
+0
+
+54
+3
+M_ME_NB_1
+54
+1
+GD 
+ 13:45:13:714 - 30/04/2026 
+0
+0
+0
+

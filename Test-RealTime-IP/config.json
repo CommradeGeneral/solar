@@ -1,0 +1,204 @@
+{
+    "plantName": "Solar Plant - Dynamic Addressing",
+    "version": "10.2.0",
+    "websocketURL": "ws://192.168.1.2:3000",
+    
+    "_documentation": {
+        "_description_ar": "نظام SCADA v10.2 - معادلات ديناميكية تتغير مع كل index",
+        "_formulas": {
+            "snap7": "byte = startByte + ((index + indexShift - 1) * bytesPerDevice) + byteOffset",
+            "modbus": "slaveId = index + slaveIdShift | register = registerStart",
+            "iec104": "ASDU = baseAsdu + (index-1)*asduStep | IOA = baseIOA + (index-1)*ioaPerDevice + fieldOffset"
+        },
+        "_endianOptions": {
+            "BE": "Big Endian (AB CD)",
+            "LE": "Little Endian (DC BA)",
+            "BE_SWAP": "Big Endian Word Swap (CD AB)",
+            "LE_SWAP": "Little Endian Word Swap (BA DC)"
+        },
+        "_examples": {
+            "modbus_index_1": "slaveId = 1 + 0 = 1",
+            "modbus_index_5": "slaveId = 5 + 0 = 5",
+            "iec104_index_1": "ASDU = 1 + (1-1)*1 = 1, IOA = 1 + (1-1)*90 + 19 = 20",
+            "iec104_index_5": "ASDU = 1 + (5-1)*1 = 5, IOA = 1 + (5-1)*90 + 19 = 380"
+        },
+                "_typeIds": {
+            "M_SP_NA_1": "1 - Single Point Information (Boolean)",
+            "M_DP_NA_1": "3 - Double Point Information",
+            "M_ME_NA_1": "9 - Measured Value, Normalized",
+            "M_ME_NB_1": "11 - Measured Value, Scaled (int16)",
+            "M_ME_NC_1": "13 - Measured Value, Short Float (float32)",
+            "M_ME_ND_1": "21 - Measured Value, Normalized without quality",
+            "M_IT_NA_1": "15 - Integrated Totals (uint32)",
+            "C_SC_NA_1": "45 - Single Command",
+            "C_DC_NA_1": "46 - Double Command"
+        },
+        "_dataTypes": {
+            "bool": "Single Point (M_SP_NA_1, typeId: 1)",
+            "int16": "Scaled Value (M_ME_NB_1, typeId: 11)",
+            "uint16": "Scaled Value (M_ME_NB_1, typeId: 11)",
+            "int32": "Integrated Total (M_IT_NA_1, typeId: 15)",
+            "uint32": "Integrated Total (M_IT_NA_1, typeId: 15)",
+            "float32": "Short Float (M_ME_NC_1, typeId: 13)"
+        },
+        "_qualityBits": {
+            
+            "OV": "Overflow",
+            "BL": "Blocked",
+            "SB": "Substituted",
+            "NT": "Not Topical",
+            "IV": "Invalid"
+        }
+
+        
+    },
+    
+    
+    "updateInterval": 1000,
+    "reconnectInterval": 5000,
+      
+    
+    "deviceTypes": {
+        "inverters": {
+            "enabled": true,
+            "displayName": "Inverter",
+            "totalCount": 75
+        },
+        "powerMeters": {
+            "enabled": true,
+            "displayName": "Protection Relays",
+            "totalCount": 14
+        },
+        "energyMeters": {
+            "enabled": true,
+            "displayName": "Energy Meters",
+            "totalCount": 14
+        }
+    },
+    
+    "css": [
+        {
+            "id": 1,
+            "name": "CSS 1 - East Wing",
+            "description": "East Wing - Main Distribution Center",
+            "color": "#3498db",
+            "transformerRating": "1000 KVA",
+            "voltage": "22KV/400V",
+            "image": "/images/css/css1.png",
+            "inverterOnImage": "/images/inverters/inverter-on.png",
+            "inverterOffImage": "/images/inverters/inverter-off.png",
+            "powerMeterImage": "/images/powermeters/pm.png",
+            "energyMeterImage": "/images/energymeters/em.png",
+            
+            "inverters": {
+                "count": 15,
+                "startIndex": 1,
+                "endIndex": 15
+            }
+
+           
+            
+        },
+        {
+            "id": 2,
+            "name": "CSS 2 - West Wing",
+            "description": "West Wing - Secondary Distribution",
+            "color": "#2ecc71",
+            "transformerRating": "1500 KVA",
+            "voltage": "33KV/400V",
+            "image": "/images/css/css2.png",
+            "inverterOnImage": "/images/inverters/inverter-on.png",
+            "inverterOffImage": "/images/inverters/inverter-off.png",
+            "powerMeterImage": "/images/powermeters/pm.png",
+            "energyMeterImage": "/images/energymeters/em.png",
+            
+            "inverters": {
+                "count": 15,
+                "startIndex": 16,
+                "endIndex": 30
+            }
+     
+        },
+        {   "id": 3,
+            "name": "CSS 3 - North Wing",
+            "description": "North Wing - Backup Distribution",
+            "color": "#e74c3c",
+            "transformerRating": "1200 KVA",
+            "voltage": "22KV/400V",
+            "image": "/images/css/css1.png",
+            "inverterOnImage": "/images/inverters/inverter-on.png",
+            "inverterOffImage": "/images/inverters/inverter-off.png",
+            "powerMeterImage": "/images/powermeters/pm.png",
+            "energyMeterImage": "/images/energymeters/em.png",
+            
+            "inverters": {
+                "count": 15,
+                "startIndex": 31,
+                "endIndex": 45
+            }
+        
+            
+          
+        },
+        {   "id": 4,
+            "name": "CSS 4 - South Wing",
+            "description": "South Wing - Emergency Distribution",
+            "color": "#f39c12",
+            "transformerRating": "1000 KVA",
+            "voltage": "22KV/400V",
+            "image": "/images/css/css1.png",
+            "inverterOnImage": "/images/inverters/inverter-on.png",
+            "inverterOffImage": "/images/inverters/inverter-off.png",
+            "powerMeterImage": "/images/powermeters/pm.png",
+            "energyMeterImage": "/images/energymeters/em.png",
+            
+            "inverters": {
+                "count": 15,
+                "startIndex": 46,
+                "endIndex": 60
+            }
+        
+            
+          
+        },
+        {
+            "id": 5,
+            "name": "CSS 5 - West Wing",
+            "description": "West Wing - Secondary Distribution",
+            "color": "#2ecc71",
+            "transformerRating": "1200 KVA",
+            "voltage": "33KV/400V",
+            "image": "/images/css/css2.png",
+            "inverterOnImage": "/images/inverters/inverter-on.png",
+            "inverterOffImage": "/images/inverters/inverter-off.png",
+            "powerMeterImage": "/images/powermeters/pm.png",
+            "energyMeterImage": "/images/energymeters/em.png",
+            
+            "inverters": {
+                "count": 15,
+                "startIndex": 61,
+                "endIndex": 75
+            }
+        
+        
+          
+        }
+        
+
+    ],
+    
+    "sld": {
+        "enabled": true,
+        "refreshInterval": 2000,
+        "colors": {
+            "cbOn": "#2ecc71",
+            "cbOff": "#e74c3c",
+            "cbUnknown": "#7f8c8d"
+        }
+    },
+    "reconnect": {
+    "maxAttempts": 0,
+    "interval": 5000,
+    "shutdownOnMaxRetries": false
+}
+     }

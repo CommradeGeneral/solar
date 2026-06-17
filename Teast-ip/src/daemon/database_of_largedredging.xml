@@ -1,0 +1,34 @@
+<service>
+	<id>database_of_largedredging.exe</id>
+	<name>database_of_largedredging</name>
+	<description>Industrial Alarm &amp; Historian Server with Siemens S7 and Modbus support</description>
+	<executable>C:\Program Files\nodejs\node.exe</executable>
+	<argument>--harmony</argument>
+	<argument>C:\Users\HP\Desktop\solar-project\Teast-ip\node_modules\node-windows\lib\wrapper.js</argument>
+	<argument>--file</argument>
+	<argument>C:\Users\HP\Desktop\solar-project\Teast-ip\src\index.js</argument>
+	<argument>--scriptoptions=</argument>
+	<argument>--log</argument>
+	<argument>database_of_largedredging wrapper</argument>
+	<argument>--grow</argument>
+	<argument>0.5</argument>
+	<argument>--wait</argument>
+	<argument>2</argument>
+	<argument>--maxrestarts</argument>
+	<argument>10</argument>
+	<argument>--abortonerror</argument>
+	<argument>n</argument>
+	<argument>--stopparentfirst</argument>
+	<argument>false</argument>
+	<logmode>rotate</logmode>
+	<logpath>C:\Users\HP\Desktop\solar-project\Teast-ip\logs</logpath>
+	<stoptimeout>30sec</stoptimeout>
+	<env name="NODE_ENV" value="production"/>
+	<env name="CONFIG_PATH" value="C:\Users\HP\Desktop\solar-project\Teast-ip\config.ini"/>
+	<serviceaccount>
+		<domain>DESKTOP-KC44QI2</domain>
+		<user>LocalSystem</user>
+		<password></password>
+	</serviceaccount>
+	<workingdirectory>C:\Users\HP\Desktop\solar-project\Teast-ip</workingdirectory>
+</service>

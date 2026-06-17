@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SVG Inspector</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .inspector-layout {
+        display: grid;
+        grid-template-columns: 420px 1fr;
+        height: 100vh;
+      }
+
+      .inspector-sidebar {
+        border-right: 1px solid var(--border-color);
+        background: rgba(10, 14, 23, 0.75);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        overflow: auto;
+      }
+
+      .inspector-header {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        padding: 14px 14px 10px;
+        border-bottom: 1px solid var(--border-color);
+        background: rgba(10, 14, 23, 0.95);
+      }
+
+      .inspector-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+      }
+
+      .inspector-title a {
+        color: var(--accent-cyan);
+        text-decoration: none;
+      }
+
+      .inspector-title a:hover {
+        text-decoration: underline;
+      }
+
+      .inspector-search {
+        width: 100%;
+        margin-top: 10px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-card);
+        color: var(--text-primary);
+        outline: none;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+      }
+
+      .inspector-meta {
+        margin-top: 10px;
+        color: var(--text-muted);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+      }
+
+      .inspector-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+      }
+
+      .inspector-table th,
+      .inspector-table td {
+        padding: 8px 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        vertical-align: top;
+      }
+
+      .inspector-table th {
+        color: var(--text-muted);
+        font-weight: 700;
+        position: sticky;
+        top: 124px;
+        background: rgba(10, 14, 23, 0.95);
+        z-index: 4;
+      }
+
+      .inspector-table tbody tr {
+        cursor: pointer;
+      }
+
+      .inspector-table tbody tr:hover {
+        background: rgba(0, 212, 255, 0.06);
+      }
+
+      .inspector-table tbody tr.active {
+        background: rgba(0, 212, 255, 0.12);
+      }
+
+      .inspector-preview {
+        position: relative;
+        overflow: auto;
+        background: transparent;
+      }
+
+      .inspector-preview .svg-container {
+        width: 100%;
+        height: 100%;
+      }
+
+      /* Highlight overlay inside the injected SVG */
+      .inspector-highlight-rect {
+        fill: rgba(255, 59, 92, 0.06);
+        stroke: rgba(255, 59, 92, 0.9);
+        stroke-width: 2;
+        rx: 6;
+        ry: 6;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="inspector-layout">
+      <aside class="inspector-sidebar">
+        <div class="inspector-header">
+          <div class="inspector-title">
+            <span>SVG Inspector</span>
+            <span>
+              <a href="solar.html">Open Solar</a>
+              &nbsp;|&nbsp;
+              <a href="inspector-sld.html">SLD Inspector</a>
+              &nbsp;|&nbsp;
+              <a href="breaker-states.html">Breaker Demo</a>
+            </span>
+          </div>
+          <input
+            id="search"
+            class="inspector-search"
+            placeholder="Search by id / title / tag / class"
+            autocomplete="off"
+          />
+          <div id="meta" class="inspector-meta"></div>
+        </div>
+
+        <table class="inspector-table" aria-label="SVG element list">
+          <thead>
+            <tr>
+              <th style="width: 44px">#</th>
+              <th style="width: 54px">Tag</th>
+              <th style="width: 150px">ID</th>
+              <th>Title</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </aside>
+
+      <main class="inspector-preview">
+        <div class="svg-container" id="preview"></div>
+      </main>
+    </div>
+
+    <script src="inspector.js"></script>
+  </body>
+</html>

@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>User Interface - Industrial Data Server</title>
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, proxy-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link rel="stylesheet" href="/static/css/app.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <div class="topbar">
+          <div>
+            <h1>User Interface</h1>
+            <p id="whoami">...</p>
+          </div>
+          <div class="header-nav">
+            <div class="nav-link">
+              <a href="/alarm" class="nav-link-inner">
+                <span class="nav-icon">🔔</span>
+                <span>Alarms</span>
+              </a>
+            </div>
+            <div class="nav-link">
+              <a href="http://192.168.1.2:5000/dashboard.html" class="nav-link-inner">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+              </a>
+            </div>
+            <button id="logoutBtn" class="secondary" style="width:auto">Logout</button>
+          </div>
+        </div>
+
+        <div class="spacer"></div>
+        <div id="msg" class="msg" style="display:none"></div>
+
+        <div id="adminArea" style="display:none">
+          <h1 style="font-size:18px">Add New User (Administrator Only)</h1>
+          <div class="row">
+            <div style="flex:1; min-width:220px">
+              <label>Username</label>
+              <input id="newUsername" autocomplete="off" />
+            </div>
+            <div style="flex:1; min-width:220px">
+              <label>Password</label>
+              <input id="newPassword" type="password" />
+            </div>
+            <div style="flex:1; min-width:220px">
+              <label>Role</label>
+              <select id="newRole">
+                <option value="viewer">viewer</option>
+                <option value="administrator">administrator</option>
+              </select>
+            </div>
+            <div style="flex:0.6; min-width:160px; align-self:end">
+              <button id="addUserBtn" style="width:100%">Add user</button>
+            </div>
+          </div>
+
+          <div class="spacer"></div>
+          <h1 style="font-size:18px">Users</h1>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Active</th>
+                <th>Last login</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="usersTbody"></tbody>
+          </table>
+        </div>
+
+        <div id="viewerArea" style="display:none">
+          <div class="msg">
+            Your Viewer Permissions: You can only view the system. (User management is for Administrator only)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+      const msg = document.getElementById('msg');
+      const whoami = document.getElementById('whoami');
+      const logoutBtn = document.getElementById('logoutBtn');
+      const adminArea = document.getElementById('adminArea');
+      const viewerArea = document.getElementById('viewerArea');
+      const usersTbody = document.getElementById('usersTbody');
+
+      function showMsg(text, type) {
+        msg.style.display = 'block';
+        msg.className = 'msg ' + (type || '');
+        msg.textContent = text;
+      }
+
+      async function loadUsers() {
+        const res = await IdsApp.apiFetch('/api/users', { method: 'GET' });
+        if (!res.ok) return;
+        const data = await res.json();
+        const users = data.users || [];
+        usersTbody.innerHTML = '';
+        for (const u of users) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${u.id}</td>
+            <td>${u.username}</td>
+            <td>${u.role}</td>
+            <td>${u.is_active ? 'Yes' : 'No'}</td>
+            <td>${u.last_login_at ? new Date(u.last_login_at).toLocaleString() : '-'}</td>
+            <td style="text-align:right">
+              <button class="secondary" data-reset="${u.id}" style="width:auto">Reset</button>
+              <button class="danger" data-del="${u.id}" style="width:auto">Delete</button>
+            </td>
+          `;
+          usersTbody.appendChild(tr);
+        }
+      }
+
+      document.addEventListener('click', async (e) => {
+        const resetBtn = e.target && e.target.closest && e.target.closest('button[data-reset]');
+        if (resetBtn) {
+          const id = resetBtn.getAttribute('data-reset');
+          const newPassword = prompt('New password for user id ' + id + ':');
+          if (!newPassword) return;
+          const res = await IdsApp.apiFetch('/api/users/' + id + '/reset-password', {
+            method: 'POST',
+            body: JSON.stringify({ newPassword }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) return showMsg(data.error || 'Reset failed', 'error');
+          showMsg('Password reset done', 'ok');
+          return;
+        }
+
+        const btn = e.target && e.target.closest && e.target.closest('button[data-del]');
+        if (!btn) return;
+        const id = btn.getAttribute('data-del');
+        if (!confirm('Delete user id ' + id + '?')) return;
+        const res = await IdsApp.apiFetch('/api/users/' + id, { method: 'DELETE' });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) return showMsg(data.error || 'Delete failed', 'error');
+        showMsg('User deleted', 'ok');
+        loadUsers();
+      });
+
+      async function init() {
+        const user = await IdsApp.requireAuth();
+        if (!user) return;
+        whoami.textContent = `Logged in as: ${user.username} (${user.role})`;
+
+        if (user.role === 'administrator') {
+          adminArea.style.display = 'block';
+          await loadUsers();
+        } else {
+          viewerArea.style.display = 'block';
+        }
+      }
+
+      logoutBtn.addEventListener('click', async () => {
+        await IdsApp.apiFetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
+        window.location.href = '/login';
+      });
+
+      document.getElementById('addUserBtn').addEventListener('click', async () => {
+        msg.style.display = 'none';
+        const username = document.getElementById('newUsername').value.trim();
+        const password = document.getElementById('newPassword').value;
+        const role = document.getElementById('newRole').value;
+        const res = await IdsApp.apiFetch('/api/users', {
+          method: 'POST',
+          body: JSON.stringify({ username, password, role }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) return showMsg(data.error || 'Create failed', 'error');
+        showMsg('User created', 'ok');
+        document.getElementById('newUsername').value = '';
+        document.getElementById('newPassword').value = '';
+        await loadUsers();
+      });
+
+      init();
+
+      // When navigating back/forward, the page may be restored from BFCache.
+      // Re-check auth to avoid showing protected content after logout.
+      window.addEventListener('pageshow', async () => {
+        await IdsApp.requireAuth();
+      });
+    </script>
+  </body>
+</html>

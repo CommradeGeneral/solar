@@ -1,0 +1,63 @@
+.header-tools{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hc{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  padding: 4px 6px;
+  color: #ffffff;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  user-select: none;
+  font-family: "Cairo", "Segoe UI", Tahoma, Arial, sans-serif;
+  transition: transform .2s ease;
+}
+
+.page-header .hc{
+  position: absolute;
+  left: 75%;
+  transform: translateX(-50%);
+}
+
+.hc:hover{
+  transform: translateY(-1px);
+}
+
+.page-header .hc:hover{
+  transform: translateX(-50%) translateY(-1px);
+}
+
+.hc-ico{
+  position: relative;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #5eead4, #6366f1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 17px;
+  line-height: 1;
+  color: #07111f;
+  box-shadow: 0 4px 14px rgba(94, 234, 212, 0.30);
+}
+
+.hc-time{
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: 1px;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px){
+  .hc{ display: none; }
+}

@@ -1,0 +1,187 @@
+/* ═══════════════════════════════════════════════════════════════
+   Historical Multi-Trend — page-specific styling (prefix: trh-)
+   Reuses multitrend.css for the tree + panels; this adds the date
+   controls, the timeline navigator, chips and toasts.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Max-tags input (in the toolbar) ─────────────────────────── */
+.trh-maxwrap {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--tr-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+}
+.trh-max {
+    width: 52px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--tr-line);
+    color: var(--tr-text);
+    border-radius: 8px;
+    padding: 4px 6px;
+    font-size: 12px;
+    text-align: center;
+}
+
+/* ── Selected-tag chips ──────────────────────────────────────── */
+.trh-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 6px 3px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--tr-line);
+    font-size: 12px;
+    color: var(--tr-text);
+}
+.trh-chip.is-loaded { border-color: rgba(46, 204, 113, 0.5); }
+.trh-chip.is-failed { border-color: rgba(231, 76, 60, 0.7); background: rgba(231, 76, 60, 0.12); }
+.trh-chip-dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
+.trh-chip-name { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.trh-chip-warn { color: #ffb84d; font-size: 12px; }
+.trh-chip-x {
+    border: none;
+    background: transparent;
+    color: var(--tr-muted);
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1;
+    padding: 0 2px;
+}
+.trh-chip-x:hover { color: #e74c3c; }
+
+/* ── Historical range controls ───────────────────────────────── */
+.trh-controls {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--tr-line);
+    background: rgba(0, 0, 0, 0.15);
+}
+.trh-field { display: flex; flex-direction: column; gap: 4px; }
+.trh-field label {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--tr-muted);
+}
+.trh-input {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--tr-line);
+    color: var(--tr-text);
+    border-radius: 8px;
+    padding: 7px 9px;
+    font-size: 13px;
+    color-scheme: dark;
+}
+.trh-load {
+    border: none;
+    background: linear-gradient(135deg, #1f9d55, #2ecc71);
+    color: #042312;
+    font-weight: 800;
+    font-size: 13px;
+    padding: 9px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: filter .12s ease, opacity .12s ease;
+}
+.trh-load:hover { filter: brightness(1.08); }
+.trh-load:disabled, .trh-load.is-busy { opacity: .6; cursor: progress; }
+.trh-status {
+    font-size: 12px;
+    color: var(--tr-muted);
+    align-self: center;
+    min-height: 16px;
+}
+.trh-status.is-error { color: #ff7a6b; font-weight: 600; }
+
+/* ── Timeline navigator ──────────────────────────────────────── */
+.trh-nav {
+    padding: 8px 14px 12px;
+    border-top: 1px solid var(--tr-line);
+    background: rgba(0, 0, 0, 0.18);
+    flex: 0 0 auto;
+}
+.trh-nav-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+.trh-nav-title {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    color: var(--tr-muted);
+    flex: 1;
+}
+.trh-nav-title small { font-weight: 500; opacity: .8; letter-spacing: 0; }
+.trh-badge {
+    font-size: 12px;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 999px;
+    color: #fff;
+}
+.trh-badge-days { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+.trh-badge-pts  { background: linear-gradient(135deg, #2980b9, #3498db); }
+
+.trh-nav-bar {
+    position: relative;
+    height: 34px;
+    border-radius: 8px;
+    background: rgba(0, 212, 255, 0.06);
+    border: 1px solid var(--tr-line);
+    overflow: hidden;
+    user-select: none;
+}
+.trh-nav-edge {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10.5px;
+    color: var(--tr-muted);
+    pointer-events: none;
+    padding: 0 8px;
+}
+.trh-nav-start { left: 0; }
+.trh-nav-end   { right: 0; }
+.trh-viewport {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 212, 255, 0.22);
+    border: 1px solid var(--tr-accent);
+    border-radius: 6px;
+    cursor: grab;
+    box-sizing: border-box;
+}
+.trh-viewport:active { cursor: grabbing; }
+
+/* ── Toast ───────────────────────────────────────────────────── */
+.trh-toast {
+    position: fixed;
+    top: 110px;
+    right: 20px;
+    z-index: 10001;
+    background: #11233a;
+    color: #e6edf5;
+    border-left: 4px solid var(--tr-accent);
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    transition: opacity .3s ease;
+}
+
+/* Make room for the navigator: chart wrap shrinks, nav sits below it. */
+.tr-chart-panel { overflow: hidden; }

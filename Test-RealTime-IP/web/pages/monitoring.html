@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCADA - Dynamic SLD</title>
+        <!-- Font: Cairo -->
+     <link rel="stylesheet" href="/css/menu-tree.css">
+    <link rel="stylesheet" href="/css/cairo.css">
+     <link rel="stylesheet" href="/css/header-clock.css">
+    <link rel="stylesheet" href="/css/loading-overlay.css">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+       body {
+    font-family: "Cairo", "Segoe UI", Tahoma, Arial, sans-serif;
+    background: #0a0e1a;
+    color: #ecf0f1;
+    min-height: 100vh;
+}
+
+        .header {
+            background: linear-gradient(180deg, rgba(22, 33, 62, 0.98) 0%, rgba(26, 26, 46, 0.95) 100%);
+            padding: 15px 30px;
+            padding-left: calc(30px + var(--mt-offset, 0px));
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(52, 152, 219, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left, .header-right { display: flex; align-items: center; gap: 20px; }
+        .header-left { position: relative; left: -150px; }
+
+        .back-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4); }
+
+        .header h1 {
+            font-size: 24px;
+            background: linear-gradient(135deg, #3498db, #2ecc71);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .css-info { font-size: 12px; color: #95a5a6; margin-top: 3px; }
+
+        .protocol-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-left: 10px;
+        }
+
+        .protocol-tag.snap7 { background: rgba(52, 152, 219, 0.3); color: #3498db; }
+        .protocol-tag.modbus { background: rgba(155, 89, 182, 0.3); color: #9b59b6; }
+        .protocol-tag.iec104 { background: rgba(46, 204, 113, 0.3); color: #2ecc71; }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #e74c3c;
+            transition: all 0.3s ease;
+        }
+
+        .status-dot.online { background: #2ecc71; animation: pulse 2s infinite; }
+        .status-dot.connecting { background: #f39c12; animation: blink 1s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.5); }
+            50% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .main-container { padding: 0; padding-left: var(--mt-offset, 0px); min-width: 1200px; margin-right: 0; width: 100%; }
+
+        .sld-wrapper {
+            background: transparent;
+            border-radius: 0;
+            padding: 10px 20px;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: none;
+            margin: 0 auto;
+        }
+
+        /* Inner box that hugs the drawing's natural width so the busbar matches
+           the inverters row, and can be scaled up to fill the screen. */
+        .sld-scale {
+            width: fit-content;
+            margin: 0 auto;
+            transform-origin: top center;
+            transition: transform 0.2s ease;
+        }
+
+        .transformer-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 0;
+            padding: 10px 0;
+        }
+
+        .section-label {
+            font-size: 12px;
+            color: #95a5a6;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            padding: 4px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .transformer { 
+            width: 120px; 
+            height: 90px; 
+            cursor: pointer; 
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .transformer:hover { transform: scale(1.05); filter: drop-shadow(0 0 15px rgba(52, 152, 219, 0.5)); }
+
+        .transformer-symbol {
+            position: relative;
+            width: 45px;
+            height: 115px;
+        }
+
+        .tx-circle {
+             position: absolute;
+             width: 55px;
+            height: 55px;
+            border: 3px dashed #ff1111de;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #472e2b;
+            left: 2px;
+        }
+
+        .transformer-symbol::before {
+            content: '';
+            position: absolute;
+            left: 2px;
+            top: 34px;
+            width: 35px;
+            height: 22px;
+            
+            border-radius: 10px;
+            
+        }
+
+        .tx-circle.left { top: 10px; left: 0px; }
+        .tx-circle.right { bottom: 10px; left: 0px; }
+
+        .vertical-line {
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(180deg, #2ecc71, #27ae60);
+            margin: 0 auto;
+            transition: all 0.3s ease;
+        }
+
+        .vertical-line.off { background: linear-gradient(180deg, #e74c3c, #c0392b); }
+
+        .main-cb-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 0;
+            padding: 0;
+        }
+
+        .circuit-breaker { width: 50px; height: 70px; cursor: pointer; transition: all 0.3s ease; }
+        .circuit-breaker:hover { transform: scale(1.1); }
+        .circuit-breaker.disabled { opacity: 0.55; cursor: not-allowed; transform: none; pointer-events: none; }         
+
+        .cb-body {
+            width: 36px;
+            height: 45px;
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            border: 2px solid #7f8c8d;
+            border-radius: 5px;
+            margin: 0 auto;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 5px;
+            overflow: hidden;
+        }
+
+        .cb-handle {
+            width: 16px;
+            height: 20px;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .circuit-breaker.on .cb-handle {
+            background: linear-gradient(145deg, #2ecc71, #27ae60);
+            transform: translateY(-15px);
+        }
+
+        .circuit-breaker.off .cb-handle {
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+            transform: translateY(0px);
+        }
+
+        .circuit-breaker.unknown .cb-handle {
+            background: linear-gradient(145deg, #7f8c8d, #95a5a6);
+        }
+
+        .cb-status { font-size: 9px; font-weight: 700; margin-top: 3px; text-align: center; }
+        .circuit-breaker.on .cb-status { color: #2ecc71; }
+        .circuit-breaker.off .cb-status { color: #e74c3c; }
+        .circuit-breaker.unknown .cb-status { color: #7f8c8d; }
+
+        .cb-small { width: 35px; height: 50px; }
+        .cb-small .cb-body { width: 26px; height: 32px; }
+        .cb-small .cb-handle { width: 12px; height: 14px; }
+        .cb-small.on .cb-handle { transform: translateY(-10px); }
+        .cb-small .cb-status { font-size: 8px; }
+
+        .busbar {
+            height: 10px;
+            background: linear-gradient(90deg, #f39c12, #e67e22, #f39c12);
+            background-color: #f39c12;
+            opacity: 1;
+            border-radius: 0;
+            margin: 0;
+            box-shadow: 0 0 15px rgba(243, 156, 18, 0.4);
+            position: relative;
+        }
+
+        .busbar::before {
+            content: 'BUSBAR';
+            position: absolute;
+            left: 50%;
+            top: -16px;
+            transform: translateX(-50%);
+            font-size: 9px;
+            color: #f39c12;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .busbar.off { background: linear-gradient(90deg, #7f8c8d, #95a5a6, #7f8c8d); box-shadow: none; }
+
+        .busbar-line {
+            height: 5px;
+            background: linear-gradient(90deg, #27ae60, #2ecc71, #27ae60);
+            border-radius: 0;
+            margin: 0;
+            width: 100%;
+        }
+
+        .busbar-line.off { background: linear-gradient(90deg, #e74c3c, #c0392b, #e74c3c); }
+
+        .power-meters-section {
+            margin: 0;
+            padding: 10px 15px;
+            background: rgba(155, 89, 182, 0.08);
+            border: none;
+            border-top: 1px solid rgba(155, 89, 182, 0.2);
+            border-radius: 0;
+        }
+
+        .power-meters-title {
+            text-align: center;
+            color: #9b59b6;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .power-meters-container { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+
+        .power-meter-unit { display: flex; flex-direction: column; align-items: center; min-width: 80px; }
+
+        .power-meter-box {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(145deg, #1a3a5c, #0d2137);
+            border: 2px solid #9b59b6;
+            border-radius: 10px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 35px;
+        }
+
+        .power-meter-box:hover { transform: scale(1.15); box-shadow: 0 5px 25px rgba(155, 89, 182, 0.5); }
+
+        .pm-label { color: #9b59b6; font-size: 11px; font-weight: bold; margin-top: 8px; }
+        .pm-image { width: 100%; height: 100%; object-fit: contain; }
+
+        .energy-meters-section {
+            margin: 0;
+            padding: 10px 15px;
+            background: rgba(230, 126, 34, 0.08);
+            border: none;
+            border-top: 1px solid rgba(230, 126, 34, 0.2);
+            border-radius: 0;
+        }
+
+        .energy-meters-title {
+            text-align: center;
+            color: #e67e22;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .energy-meters-container { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+
+        .energy-meter-unit { display: flex; flex-direction: column; align-items: center; min-width: 80px; }
+
+        .energy-meter-box {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(145deg, #1a3a5c, #0d2137);
+            border: 2px solid #e67e22;
+            border-radius: 10px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 35px;
+        }
+
+        .energy-meter-box:hover { transform: scale(1.15); box-shadow: 0 5px 25px rgba(230, 126, 34, 0.5); }
+
+        .em-label { color: #e67e22; font-size: 11px; font-weight: bold; margin-top: 8px; }
+        .em-image { width: 100%; height: 100%; object-fit: contain; }
+
+        .inverters-container { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; padding: 10px 0 5px 0; }
+
+        .inverter-unit { display: flex; flex-direction: column; align-items: center; min-width: 70px; }
+
+        .connection-to-bus {
+            width: 3px;
+            height: 15px;
+            background: linear-gradient(180deg, #2ecc71, #27ae60);
+            transition: all 0.3s ease;
+        }
+        .connection-to-bus.off { background: linear-gradient(180deg, #e74c3c, #c0392b); }
+
+        .inverter-img-container {
+            width: 60px;
+            height: 70px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            overflow: hidden;
+           /* border: 2px solid transparent; */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .inverter-img-container:hover { transform: scale(1.15); border-color: #3498db; box-shadow: 0 0 20px rgba(52, 152, 219, 0.5); }
+        .inverter-label { font-size: 10px; color: #3498db; font-weight: 600; margin-top: 5px; }
+
+        .inverter-svg-on, .inverter-svg-off {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(145deg, #1a252f, #0d1520);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .inverter-svg-on { border: 2px solid #2ecc71; color: #2ecc71; }
+        .inverter-svg-off { border: 2px solid #e74c3c; color: #e74c3c; filter: grayscale(50%); }
+
+        /* Communication State Indicator */
+        .comm-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            transition: all 0.3s ease;
+        }
+        
+        .comm-indicator.online {
+            background: #2ecc71;
+            box-shadow: 0 0 6px #2ecc71;
+            animation: comm-pulse 2s infinite;
+        }
+        
+        .comm-indicator.offline {
+            background: #7f8c8d;
+            box-shadow: none;
+        }
+        
+        @keyframes comm-pulse {
+            0%, 100% { box-shadow: 0 0 3px #2ecc71; }
+            50% { box-shadow: 0 0 8px #2ecc71; }
+        }
+        
+        .inverter-img-container {
+            position: relative;
+        }
+        
+        /* Inverter disconnected state - with border */
+        .inverter-svg-disconnected {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(145deg, #1a252f, #0d1520);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: 2px dashed #7f8c8d;
+            color: #7f8c8d;
+            filter: grayscale(100%);
+            opacity: 0.6;
+        }
+        /* Right Sidebar for Meters */
+        .meters-sidebar {
+            position: fixed;
+            right: 0;
+            top: 60px;
+            bottom: 0;
+            width: 150px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            z-index: 50;
+            background: linear-gradient(180deg, #0d1b2a 0%, #1b263b 100%);
+            border-left: 2px solid rgba(52, 152, 219, 0.3);
+            padding-top: 10px;
+        }
+        
+        .sidebar-section {
+            background: transparent;
+            border-radius: 0;
+            padding: 10px 8px;
+            border: none;
+            border-bottom: 1px solid rgba(52, 152, 219, 0.2);
+            box-shadow: none;
+            backdrop-filter: none;
+        }
+        
+        .sidebar-title {
+            font-size: 10px;
+            color: rgba(236, 240, 241, 0.7);
+            text-align: center;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        
+        .sidebar-items {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .sidebar-meter {
+            width: 58px;
+            height: 58px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+            border: none;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+        }
+
+        .sidebar-meter img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 8px;
+        }
+        
+        .sidebar-meter.pm {
+            background: linear-gradient(145deg, rgba(155, 89, 182, 0.35), rgba(30, 44, 70, 0.9));
+            color: #c9a0e4;
+        }
+        
+        .sidebar-meter.em {
+            background: linear-gradient(145deg, rgba(230, 126, 34, 0.35), rgba(30, 44, 70, 0.9));
+            color: #f0b06b;
+        }
+        
+        .sidebar-meter:hover {
+            transform: translateY(-2px) scale(1.06);
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+        }
+        
+        .sidebar-label {
+            font-size: 10px;
+            color: rgba(236, 240, 241, 0.65);
+            text-align: center;
+            margin-top: 2px;
+        }
+        .inverter-image { width: 100%; height: 100%; object-fit: contain; border-radius: 6px; }
+        .inverter-image.disconnected { filter: grayscale(100%); opacity: 0.6; }
+
+        /* No-Signal Overlay */
+        .no-signal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            border-radius: 6px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            border: 2px solid #e74c3c;
+            animation: nosignal-fade-in 0.4s ease;
+        }
+
+        .no-signal-overlay.active {
+            display: flex;
+        }
+
+        .no-signal-overlay img {
+            width: 70%;
+            height: 70%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 6px rgba(231, 76, 60, 0.6));
+            animation: nosignal-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes nosignal-fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes nosignal-pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.92); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.success { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+        .notification.error { background: linear-gradient(135deg, #c0392b, #e74c3c); }
+        .notification.info { background: linear-gradient(135deg, #2980b9, #3498db); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 400px;
+            color: #95a5a6;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(52, 152, 219, 0.2);
+            border-top-color: #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .nav-link:hover {
+            background: rgba(0, 217, 255, 0.1);
+            color: #00d4ff;
+        }
+        .header-logos {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            flex: 0 0 auto;
+        }
+        /* ── Logos ── */
+.logo1, .logo2, .logo3, .logo4 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    height: 60px;
+    margin-right: 0px;
+}
+
+.logo1 {
+    margin-left: 0px;
+}
+
+.logo1 img, .logo2 img, .logo3 img, .logo4 img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.3));
+}
+    </style>
+</head>
+<body>
+    <script src="/js/menu-tree-init.js"></script>
+    <aside id="menuTree" class="mt" aria-label="Project menu"></aside>
+    <div id="menuTreeBackdrop" class="mt-backdrop" hidden></div>
+
+    <div class="header">
+        <button type="button" class="mt-open-btn" id="menuTreeOpenBtn" aria-label="Open menu"></button>
+
+        <div class="header-logos">
+         <div class="logo1">
+            <img src="/images/Asorc.png" alt="Asorc">
+        </div>
+        <div class="logo2">
+            <img src="/images/Enppi.png" alt="Enppi">
+        </div>
+        <div class="logo3">
+            <img src="/images/infinty.png" alt="infinty">
+        </div>
+        
+        </div>
+        <div class="header-left">
+            <button class="back-btn" onclick="window.location.href='dashboard.html'">← Dashboard</button>
+            <div>
+                <h1 id="page-title">⚡ Loading...</h1>
+                <div class="css-info" id="css-info"></div>
+            </div>
+        </div>
+       
+        
+        <div class="header-tools">
+            <div class="hc" data-header-clock>
+                <span class="hc-ico" aria-hidden="true">⏱</span>
+                <span class="hc-time" aria-label="Current time">--:--</span>
+            </div>
+            <a href="#" id="idsLogout" class="nav-link">
+                <span>🚪</span>
+                <span>Logout</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="sld-wrapper" id="sld-content">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>Loading configuration...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/loading-overlay.js"></script>
+    <script>
+        let config = null;
+        let cssConfig = null;
+        let cssId = null;
+        let socket = null;
+        let sldData = {};
+        let isConnected = false;
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // Get CSS ID from URL
+        // ═══════════════════════════════════════════════════════════════════════════
+        
+        function getCSSIdFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return parseInt(params.get('css')) || 1;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // Load Configuration
+        // ═══════════════════════════════════════════════════════════════════════════
+        
+        async function loadConfig() {
+            try {
+                cssId = getCSSIdFromURL();
+                
+                // Load config from API
+                const response = await fetch('/api/config');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                config = await response.json();
+                console.log('✅ Configuration loaded:', config);
+                
+                // Find CSS config
+                cssConfig = config.css.find(c => c.id === cssId);
+                
+                if (!cssConfig) {
+                    throw new Error(`CSS ${cssId} not found`);
+                }
+                
+                // Update header
+                document.getElementById('page-title').innerHTML = `⚡ ${cssConfig.name}`;
+                
+                // Build protocol tags
+                const protocols = new Set();
+                if (cssConfig.inverters?.connectionType) protocols.add(cssConfig.inverters.connectionType);
+                if (cssConfig.powerMeters?.connectionType) protocols.add(cssConfig.powerMeters.connectionType);
+                if (cssConfig.energyMeters?.connectionType) protocols.add(cssConfig.energyMeters.connectionType);
+                
+                let protocolTags = '';
+                protocols.forEach(p => {
+                    protocolTags += `<span class="protocol-tag ${p}">${p}</span>`;
+                });
+                
+                document.getElementById('css-info').innerHTML = 
+                    `${cssConfig.description} | ${cssConfig.transformerRating} | ${cssConfig.voltage} ${protocolTags}`;
+                
+                // Render SLD
+                renderSLD();
+                
+                // Connect WebSocket
+                connectSocketIO();
+                
+            } catch (err) {
+                console.error('❌ Error loading config:', err);
+                document.getElementById('sld-content').innerHTML = `
+                    <div class="loading">
+                        <p style="color: #e74c3c;">❌ ${err.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // Render SLD
+        // ═══════════════════════════════════════════════════════════════════════════
+        
+        function renderSLD() {
+            const container = document.getElementById('sld-content');
+            
+            const invCount = cssConfig.inverters?.count || 0;
+            const pmCount = cssConfig.powerMeters?.count || 0;
+            const emCount = cssConfig.energyMeters?.count || 0;
+            const invStartIdx = cssConfig.inverters?.startIndex || 1;
+            const pmStartIdx = cssConfig.powerMeters?.startIndex || 1;
+            const emStartIdx = cssConfig.energyMeters?.startIndex || 1;
+            
+            let html = `
+                <!-- Transformer Section -->
+                <div class="transformer-section">
+                    <div class="section-label">${cssConfig.voltage}</div>
+                    <div class="transformer" title="Transformer ${cssConfig.transformerRating}">
+                        <div class="transformer-symbol">
+                            <div class="tx-circle left"></div>
+                            <div class="tx-circle right"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="vertical-line" id="line-transformer"></div>
+                
+                <!-- Vacuum CB -->
+                <div class="main-cb-section">
+                    <div class="circuit-breaker unknown disabled" id="vacuum-cb">
+                        <div class="cb-body">
+                            <div class="cb-handle"></div>
+                        </div>
+                        <div class="cb-status">VACUUM CB</div>
+                    </div>
+                </div>
+                
+                <div class="vertical-line" id="line-main"></div>
+                
+                <!-- Main CB -->
+                <div class="main-cb-section">
+                    <div class="circuit-breaker unknown disabled" id="main-cb">
+                        <div class="cb-body">
+                            <div class="cb-handle"></div>
+                        </div>
+                        <div class="cb-status">MAIN CB</div>
+                    </div>
+                </div>
+                
+
+              
+                
+              
+            `;
+            
+            // Secondary Busbar
+            html += `<div class="busbar-line" id="secondary-busbar" style="margin-bottom: 0;margin-top: 0;"></div>`;
+            
+            // Inverters Section
+            if (invCount > 0) {
+                html += `
+                    <div class="inverters-container " style="padding-bottom: 0px;padding-top: 0px;">
+                `;
+                
+                for (let i = 0; i < invCount; i++) {
+                    const invId = invStartIdx + i;
+                    html += `
+                        <div class="inverter-unit">
+                             <div class="connection-to-bus" id="inv-line-${i+1}"></div>
+                            <div class="circuit-breaker cb-small unknown" id="inv-cb-${i+1}" onclick="toggleInverterCB(${i+1})" title="Click to control CB">
+                              
+                                <div class="cb-body">
+                                    
+                                    <div class="cb-handle"></div>
+                                    
+                                </div>
+                                
+                                <div class="cb-status">CB${i+1}</div>
+                            </div>
+                            <div class="connection-to-bus" id="inv-line-${i+1}"></div>
+                            <div class="inverter-img-container" onclick="openInverter(${invId})" title="Inverter ${invId}">
+                                <div class="comm-indicator offline" id="inv-comm-${i+1}" title="Communication Status"></div>
+                                <div class="no-signal-overlay" id="inv-nosignal-${i+1}">
+                                    <img src="/images/nosignal.png" alt="No Signal">
+                                </div>
+                                <img src="${cssConfig.inverterOffImage || '/images/inverters/inverter-off.png'}" class="inverter-image" id="inv-icon-${i+1}" alt="INV ${invId}"
+                                    onerror="this.outerHTML='<div class=\\'inverter-svg-off\\'>⚡</div>'">>
+                            </div>
+                            <div class="inverter-label">INV ${invId}</div>
+                        </div>
+                    `;
+                }
+                
+                html += `</div>`;
+            }
+            
+            container.innerHTML = `<div class="sld-scale">${html}</div>`;
+            updateWriteLock(!isConnected);
+
+            // Scale the whole drawing to fill the screen after layout settles
+            requestAnimationFrame(scaleSLD);
+        }
+
+        // Enlarge the SLD drawing so it fills the available screen space
+        function scaleSLD() {
+            const box = document.querySelector('.sld-scale');
+            if (!box) return;
+            box.style.transform = 'none';
+            const natW = box.offsetWidth;
+            const natH = box.offsetHeight;
+            if (!natW || !natH) return;
+            const availW = window.innerWidth * 0.78;
+            const availH = window.innerHeight - 140; // leave room for the top nav bar
+            const scale = Math.min(availW / natW, availH / natH, 3);
+            box.style.transform = `scale(${scale.toFixed(3)})`;
+        }
+
+        window.addEventListener('resize', scaleSLD);
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // Update SLD from Data
+        // ═══════════════════════════════════════════════════════════════════════════
+        
+        function updateSLD(data) {
+            const cssKey = `css${cssId}`;
+            const cssData = data[cssKey];
+            
+            if (!cssData) return;
+            
+            // Update Main/Vacuum CB only when PLC provides a valid state
+            if (cssData.mainCB === 1 || cssData.mainCB === 0) {
+                updateCB('main-cb', cssData.mainCB);
+            }
+            if (cssData.vacuumCB === 1 || cssData.vacuumCB === 0) {
+                updateCB('vacuum-cb', cssData.vacuumCB);
+            }
+            
+            // Update lines based on current displayed CB states
+            const mainOn = getCBStateFromDOM('main-cb') === 1;
+            const vacuumOn = getCBStateFromDOM('vacuum-cb') === 1;
+            
+            document.getElementById('line-transformer')?.classList.toggle('off', !vacuumOn);
+            document.getElementById('line-main')?.classList.toggle('off', !mainOn || !vacuumOn);
+            document.getElementById('main-busbar')?.classList.toggle('off', !mainOn || !vacuumOn);
+            document.getElementById('secondary-busbar')?.classList.toggle('off', !mainOn || !vacuumOn);
+            
+            // Update Inverter CBs, States and Communication
+            const invCount = cssConfig.inverters?.count || 0;
+            for (let i = 1; i <= invCount; i++) {
+                const cbState = cssData.circuitBreakers?.[`inv${i}`];
+                const invState = cssData.inverterStates?.[`inv${i}`];
+                const commState = cssData.commStates?.[`inv${i}`];
+                
+                // Update CB
+                const cbEl = document.getElementById(`inv-cb-${i}`);
+                if (cbEl) {
+                    cbEl.classList.remove('on', 'off', 'unknown');
+                    if (cbState === 1) cbEl.classList.add('on');
+                    else if (cbState === 0) cbEl.classList.add('off');
+                    else cbEl.classList.add('unknown');
+                }
+                
+                // Update connection line
+                const lineEl = document.getElementById(`inv-line-${i}`);
+                if (lineEl) {
+                    lineEl.classList.toggle('off', cbState !== 1);
+                }
+                
+                // Update communication indicator
+                const commEl = document.getElementById(`inv-comm-${i}`);
+                if (commEl) {
+                    commEl.classList.remove('online', 'offline');
+                    if (commState === 1 || commState === true) {
+                        commEl.classList.add('online');
+                        commEl.title = 'Communication: Online';
+                    } else {
+                        commEl.classList.add('offline');
+                 commEl.title = 'Communication: Offline';
+                    }
+                }
+                
+                // Update inverter icon based on state only
+                const iconEl = document.getElementById(`inv-icon-${i}`);
+                if (iconEl) {
+                    if (invState === 1) {
+                        iconEl.src = cssConfig.inverterOnImage || '/images/inverters/inverter-on.png';
+                    } else {
+                        iconEl.src = cssConfig.inverterOffImage || '/images/inverters/inverter-off.png';
+                    }
+                }
+            }
+        }
+        
+        function updateCB(elementId, state) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            
+            el.classList.remove('on', 'off', 'unknown');
+            
+            if (state === 1) {
+                el.classList.add('on');
+            } else if (state === 0) {
+                el.classList.add('off');
+            } else {
+                el.classList.add('unknown');
+            }
+        }
+
+        function getCBStateFromDOM(elementId) {
+            const el = document.getElementById(elementId);
+            if (!el) return null;
+            if (el.classList.contains('on')) return 1;
+            if (el.classList.contains('off')) return 0;
+            return null;
+        }
+
+        function updateWriteLock(isLocked) {
+            document.querySelectorAll('.circuit-breaker').forEach(el => {
+                el.classList.toggle('disabled', isLocked);
+            });
+        }
+
+        // Static UI mode for breakers (no writes, no API calls)
+        // Enable control by setting: window.CB_CONTROL_ENABLED = true
+        const CB_CONTROL_ENABLED = (window.CB_CONTROL_ENABLED === true);
+        if (!CB_CONTROL_ENABLED) updateWriteLock(true);
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // Communication Status Overlay (No-Signal)
+        // ═══════════════════════════════════════════════════════════════════════════
+
+        function updateCommOverlays(data) {
+            if (!cssConfig) return;
+            const invCount = cssConfig.inverters?.count || 0;
+            const invStartIdx = cssConfig.inverters?.startIndex || 1;
+
+            for (let i = 0; i < invCount; i++) {
+                const invId = invStartIdx + i;
+                const tagName = `INV${String(invId).padStart(3, '0')}_CommunicationStatus`;
+                const val = data[tagName];
+                const overlayEl = document.getElementById(`inv-nosignal-${i + 1}`);
+                const commEl = document.getElementById(`inv-comm-${i + 1}`);
+
+                if (!overlayEl) continue;
+
+                // val === 1 → online (hide overlay), val === 0 → offline (show overlay)
+                // If tag not received yet (undefined), keep overlay hidden
+                if (val !== undefined && (val === 0 || val === false)) {
+                    overlayEl.classList.add('active');
+                    if (commEl) { commEl.classList.remove('online'); commEl.classList.add('offline'); commEl.title = 'Communication: Offline'; }
+                } else if (val === 1 || val === true) {
+                    overlayEl.classList.remove('active');
+                    if (commEl) { commEl.classList.remove('offline'); commEl.classList.add('online'); commEl.title = 'Communication: Online'; }
+                }
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // Navigation Functions
+        // ═══════════════════════════════════════════════════════════════════════════
+        
+        // Show the loading overlay for 2s, then navigate (overlay stays up until
+        // the new page replaces it — load first, data after).
+        function navigateWithLoading(url, text) {
+            if (window.LoadingOverlay) {
+                window.LoadingOverlay.show(0, text);
+                setTimeout(() => { window.location.href = url; }, 2000);
+            } else {
+                window.location.href = url;
+            }
+        }
+
+        function openInverter(index) {
+            navigateWithLoading(`inverter.html?index=${index}&css=${cssId}`, `Loading Inverter ${index}`);
+        }
+
+        function openPowerMeter(index) {
+            navigateWithLoading(`powermeters.html?index=${index}&css=${cssId}`, `Loading Power Meter ${index}`);
+        }
+
+        function openEnergyMeter(index) {
+            navigateWithLoading(`energymeter.html?index=${index}&css=${cssId}`, `Loading Energy Meter ${index}`);
+        }
+        
+        function toggleCB(type) {
+            if (!CB_CONTROL_ENABLED) return;
+            if (!isConnected) {
+                showNotification('Server disconnected: write is locked', 'error');
+                return;
+            }
+            // Get current state from element - NO CONFIRMATION
+            const cbElement = document.getElementById(type === 'main' ? 'main-cb' : type === 'vacuum' ? 'vacuum-cb' : null);
+            if (!cbElement) return;
+            
+            const currentState = cbElement.classList.contains('on') ? 1 : 0;
+            const action = currentState === 1 ? 'open' : 'close';
+            const actionText = action === 'close' ? 'open' : 'Close';
+            
+            
+            // Send command to PLC - state will update automatically from PLC data via WebSocket
+            fetch(`/api/controlCB?cssId=${cssId}&cbType=${type}&action=${action}`)
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.json();
+                })
+                .then(data => {
+            
+                    if (data.ok) {
+                          showNotification(` ${actionText} the CB`, 'info')
+                        // Note: CB state will update automatically from PLC via WebSocket
+                    } else {
+                        showNotification(`error: ${data.error || data.message}`, 'error');
+                    }
+                })
+                .catch(err => {
+                    showNotification(`Error in Connection: ${err.message}`, 'error');
+                });
+        }
+        
+        function toggleInverterCB(invIndex) {
+            if (!CB_CONTROL_ENABLED) return;
+            if (!isConnected) {
+                showNotification('Server disconnected: write is locked', 'error');
+                return;
+            }
+            const cbElement = document.getElementById(`inv-cb-${invIndex}`);
+            if (!cbElement) return;
+            
+            const currentState = cbElement.classList.contains('on') ? 1 : 0;
+            const action = currentState === 1 ? 'open' : 'close';
+            const actionText = action === 'close' ? 'open' : 'Close';
+            
+            // Send command to PLC - NO CONFIRMATION - state will update from PLC data
+            fetch(`/api/controlCB?cssId=${cssId}&cbType=inverter&invIndex=${invIndex}&action=${action}`)
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.ok) {
+                        showNotification(` ${actionText} the CB`, 'info');
+                        // Note: CB state will update automatically from PLC via WebSocket
+                    } else {
+                        showNotification(`Error: ${data.error || data.message}`, 'error');
+                    }
+                })
+                .catch(err => {
+                    showNotification(`Error: ${err.message}`, 'error');
+                });
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // WebSocket Connection
+        // ═══════════════════════════════════════════════════════════════════════════
+        
+        function connectSocketIO() {
+            socket = io();
+
+            socket.on('connect', function() {
+                isConnected = true;
+                updateConnectionUI('connected');
+                console.log('✅ Socket.IO connected');
+            });
+
+            socket.on('disconnect', function() {
+                isConnected = false;
+                console.log('❌ Socket.IO disconnected');
+                updateConnectionUI('disconnected');
+            });
+
+            socket.on('connect_error', function(err) {
+                isConnected = false;
+                console.error('Socket.IO error:', err);
+                updateConnectionUI('error');
+            });
+
+            socket.on('tag_updates', function(updates) {
+                // Convert tag_updates array to sldData structure
+                updates.forEach(u => {
+                    sldData[u.tag_name] = u.value;
+                });
+                updateSLD(sldData);
+                updateCommOverlays(sldData);
+            });
+
+            socket.on('device_status', function(devices) {
+                const anyConnected = devices.some(d => d.connected);
+                if (anyConnected) {
+                    updateConnectionUI('connected');
+                }
+            });
+        }
+
+        function updateConnectionUI(status) {
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            if (!dot || !text) {
+                updateWriteLock(status !== 'connected');
+                return;
+            }
+            
+            dot.classList.remove('online', 'connecting');
+
+            // When the web client loses server connection, show No-Signal overlays
+            // regardless of the last PLC CommunicationStatus tags (which may stop updating).
+            const showServerNoSignal = status !== 'connected';
+            document.querySelectorAll('.no-signal-overlay').forEach(el => {
+                el.classList.toggle('active', showServerNoSignal);
+            });
+            document.querySelectorAll('.inverter-image').forEach(el => {
+                el.classList.toggle('disconnected', showServerNoSignal);
+            });
+            if (showServerNoSignal) {
+                document.querySelectorAll('.comm-indicator').forEach(el => {
+                    el.classList.remove('online');
+                    el.classList.add('offline');
+                    el.title = 'Communication: Offline (Server disconnected)';
+                });
+            }
+            
+            switch(status) {
+                case 'connected':
+                    dot.classList.add('online');
+                    text.textContent = 'Connected';
+                    text.style.color = '#2ecc71';
+                    updateWriteLock(false);
+                    break;
+                case 'connecting':
+                    dot.classList.add('connecting');
+                    text.textContent = 'Connecting...';
+                    text.style.color = '#f39c12';
+                    updateWriteLock(true);
+                    break;
+                default:
+                    text.textContent = 'Disconnected';
+                    text.style.color = '#e74c3c';
+                    updateWriteLock(true);
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const existing = document.querySelectorAll('.notification');
+            existing.forEach(n => n.remove());
+
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', loadConfig);
+    </script>
+    <script src="js/connection-alert.js"></script>
+
+<script>
+/* IDS_AUTH_GUARD */
+(function () {
+  const API_BASE = "http://192.168.1.2:3000";
+  const LOGIN_URL = "http://192.168.1.2:3000/login";
+
+  async function ensureAuth() {
+    try {
+      const res = await fetch(API_BASE + '/api/auth/me', { credentials: 'include' });
+      if (!res.ok) {
+        window.location.replace(LOGIN_URL);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      window.location.replace(LOGIN_URL);
+      return false;
+    }
+  }
+
+  async function doLogout(e) {
+    try { if (e) e.preventDefault(); } catch {}
+    try {
+      await fetch(API_BASE + '/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch {}
+    window.location.replace(LOGIN_URL);
+    return false;
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    ensureAuth();
+    const btn = document.getElementById('idsLogout');
+    if (btn) btn.addEventListener('click', doLogout);
+  });
+
+  // BFCache/back-forward: re-check auth on restore
+  window.addEventListener('pageshow', function () {
+    ensureAuth();
+  });
+})();
+</script>
+    <script src="/js/menu-tree.js"></script>
+    <script src="/js/header-clock.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,60 @@
+{
+  "name": "scada-server",
+  "version": "3.0.0",
+  "description": "SCADA System with Modbus TCP + IEC 60870-5-104 Server and WebSocket",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "start:all": "node server/start-all.js",
+    "dev": "nodemon server/server.js",
+    "ping-server": "node server/ping-server.js",
+    "start:prod": "cross-env NODE_ENV=production pm2 start ecosystem.config.js",
+    "stop:prod": "pm2 stop scada-server",
+    "restart:prod": "pm2 restart scada-server",
+    "logs": "pm2 logs scada-server",
+    "health": "curl -s http://192.168.1.2:5000/api/health",
+    "test": "node --test",
+    "lint": "eslint server/ web/js/"
+  },
+  "keywords": [
+    "scada",
+    "modbus",
+    "iec104",
+    "iec60870",
+    "automation",
+    "websocket",
+    "hmi",
+    "industrial"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "socket.io": "^4.7.4",
+    "exceljs": "^4.4.0",
+    "mathjs": "^12.4.0",
+    "modbus-serial": "^8.0.17",
+    "winston": "^3.14.0",
+    "winston-daily-rotate-file": "^5.0.0",
+    "express-rate-limit": "^7.4.0",
+    "helmet": "^7.1.0",
+    "compression": "^1.7.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4",
+    "pm2": "^5.4.2",
+    "cross-env": "^7.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "overrides": {
+    "glob": "^10.0.0",
+    "rimraf": "^5.0.0",
+    "path-to-regexp": "0.1.13",
+    "qs": "6.14.2",
+    "socket.io-parser": "4.2.6",
+    "uuid": "14.0.0"
+  }
+}

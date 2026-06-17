@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCADA Dashboard</title>
+    <!-- Font: Cairo -->
+    <link rel="stylesheet" href="/css/cairo.css">
+    <link rel="stylesheet" href="/css/menu-tree.css">
+    <link rel="stylesheet" href="/css/header-clock.css">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: "Cairo", "Segoe UI", Tahoma, Arial, sans-serif;
+    background: #0a0e1a;
+    color: #ecf0f1;
+    min-height: 100vh;
+}
+
+        .header {
+            background: linear-gradient(135deg, #0d1326 0%, #131b33 100%);
+            padding: 12px 24px;
+            padding-left: calc(24px + var(--mt-offset, 0px));
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(52, 152, 219, 0.25);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            background: linear-gradient(135deg, #3498db, #2ecc71);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-left { margin-left: 0; }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+
+        /* Pin Logout to the far right so the clock keeps the same position as the
+           other pages (where header-right is empty). */
+        #idsLogout { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); }
+        #idsLogout:hover { transform: translateY(-50%) translateY(-1px); }
+        
+        .plant-name { font-size: 14px; color: #95a5a6; margin-top: 5px; }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 25px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #e74c3c;
+            transition: all 0.3s ease;
+        }
+
+        .status-dot.online { background: #2ecc71; animation: pulse 2s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.5); }
+            50% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
+        }
+
+        .protocol-badges {
+            display: flex;
+            gap: 8px;
+            margin-left: 15px;
+        }
+
+        .protocol-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .protocol-badge.snap7 { background: rgba(52, 152, 219, 0.3); color: #3498db; }
+        .protocol-badge.modbus { background: rgba(155, 89, 182, 0.3); color: #9b59b6; }
+        .protocol-badge.iec104 { background: rgba(46, 204, 113, 0.3); color: #2ecc71; }
+        .protocol-badge.offline { opacity: 0.4; }
+
+        .main-content { padding: 40px; padding-left: calc(40px + var(--mt-offset, 0px)); }
+
+        .section-title {
+            font-size: 24px;
+            color: #3498db;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(52, 152, 219, 0.3);
+        }
+
+        .css-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .css-card {
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            border: 2px solid transparent;
+        }
+
+        .css-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--css-color);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .css-image-container { position: relative; overflow: hidden; }
+
+        .css-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .css-card:hover .css-image { transform: scale(1.1); }
+
+        .css-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.8) 100%);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .css-card:hover .css-overlay { opacity: 1; }
+
+        .css-overlay-text { color: white; font-weight: bold; font-size: 16px; }
+
+        .css-info { padding: 20px; }
+
+        .css-name { font-size: 20px; font-weight: bold; color: #ecf0f1; margin-bottom: 5px; }
+        .css-description { font-size: 13px; color: #95a5a6; margin-bottom: 15px; }
+
+        .css-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .css-stat {
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .css-stat .value { font-size: 18px; font-weight: bold; color: var(--css-color); }
+        .css-stat .label { font-size: 10px; color: #95a5a6; margin-top: 3px; }
+
+        .css-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--css-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 10;
+        }
+
+        .css-protocols {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .css-protocol-tag {
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .css-protocol-tag.snap7 { background: rgba(52, 152, 219, 0.2); color: #3498db; }
+        .css-protocol-tag.modbus { background: rgba(155, 89, 182, 0.2); color: #9b59b6; }
+        .css-protocol-tag.iec104 { background: rgba(46, 204, 113, 0.2); color: #2ecc71; }
+
+        .click-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 12px;
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.2), rgba(46, 204, 113, 0.2));
+            border-radius: 10px;
+            color: #3498db;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .placeholder-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 400px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(52, 152, 219, 0.2);
+            border-top-color: #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.info { background: linear-gradient(135deg, #2980b9, #3498db); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* ── Header nav ── */
+        .header > div.nav-link {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            padding: 0;
+            border-radius: 0;
+            background: transparent;
+        }
+
+        .header > div.nav-link:hover { background: transparent; }
+
+        .header a.nav-link {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            color: #f5f7ff;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 14px;
+            letter-spacing: 0.3px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            transition: transform .15s ease, background .15s ease, border-color .15s ease;
+        }
+
+        .header a.nav-link:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(52, 152, 219, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .header a.nav-link:active { transform: translateY(0); }
+
+        .header a.nav-link:focus { outline: none; }
+        .header a.nav-link:focus-visible {
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.28);
+            border-color: rgba(52, 152, 219, 0.45);
+        }
+
+        .nav-icon {
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            background: radial-gradient(circle at 30% 30%, rgba(46, 204, 113, 0.35), rgba(52, 152, 219, 0.18));
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .header-logos {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            flex: 0 0 auto;
+        }
+
+                /* ── Logos ── */
+.logo1, .logo2, .logo3, .logo4 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    height: 60px;
+    margin-right: 0px;
+}
+
+.logo1 {
+    margin-left: 0px;
+    height: 72px;
+}
+
+.logo1 img, .logo2 img, .logo3 img, .logo4 img  {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.3));
+}
+    </style>
+</head>
+<body>
+    <script src="/js/menu-tree-init.js"></script>
+    <aside id="menuTree" class="mt" aria-label="Project menu"></aside>
+    <div id="menuTreeBackdrop" class="mt-backdrop" hidden></div>
+
+    <div class="header">
+        <button type="button" class="mt-open-btn" id="menuTreeOpenBtn" aria-label="Open menu"></button>
+
+
+
+        <div class="header-logos">
+            <div class="logo1">
+                <img src="/images/Asorc.png" alt="Asorc">
+            </div>
+            <div class="logo2">
+                <img src="/images/Enppi.png" alt="Enppi">
+            </div>
+            <div class="logo3">
+                <img src="/images/infinty.png" alt="infinty">
+            </div>
+            
+        </div>
+
+        <div class="header-left">
+            <h1>⚡ 10MW ASORC PV</h1>
+            <div class="plant-name" id="plant-name">Loading...</div>
+        </div>
+
+
+        
+        <div class="hc" data-header-clock>
+            <span class="hc-ico" aria-hidden="true">⏱</span>
+            <span class="hc-time" aria-label="Current time">--:--</span>
+        </div>
+
+        <div class="header-right"></div>
+
+        <a href="#" id="idsLogout" class="nav-link">
+            <span>🚪</span>
+            <span>Logout</span>
+        </a>
+    </div>
+
+    <div class="main-content">
+        <!-- CSS Stations -->
+       
+        <div class="css-grid" id="css-grid">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p style="margin-top: 20px; color: #95a5a6;">Loading configuration...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/menu-tree.js"></script>
+    <script src="/js/header-clock.js"></script>
+    <script>
+        let config = null;
+        let socket = null;
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // Load Configuration from API
+        // ═══════════════════════════════════════════════════════════════════════════
+        
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                config = await response.json();
+                console.log('✅ Configuration loaded:', config);
+                
+                const plantNameEl = document.getElementById('plant-name');
+                if (plantNameEl) { plantNameEl.textContent = ''; plantNameEl.style.display = 'none'; }
+                const cssCount = Array.isArray(config.css) ? config.css.length : 0;
+                const totalCssEl = document.getElementById('total-css');
+                if (totalCssEl) totalCssEl.textContent = cssCount;
+                
+                let totalInverters = 0;
+                let totalPM = 0;
+                let totalEM = 0;
+                
+                if (Array.isArray(config.css)) {
+                    config.css.forEach(css => {
+                        totalInverters += css.inverters?.count || 0;
+                        totalPM += css.powerMeters?.count || 0;
+                        totalEM += css.energyMeters?.count || 0;
+                    });
+                }
+
+                if (Number.isFinite(config?.deviceTypes?.inverters?.totalCount)) totalInverters = config.deviceTypes.inverters.totalCount;
+                if (Number.isFinite(config?.deviceTypes?.powerMeters?.totalCount)) totalPM = config.deviceTypes.powerMeters.totalCount;
+                if (Number.isFinite(config?.deviceTypes?.energyMeters?.totalCount)) totalEM = config.deviceTypes.energyMeters.totalCount;
+                
+                const totalInvertersEl = document.getElementById('total-inverters');
+                if (totalInvertersEl) totalInvertersEl.textContent = totalInverters;
+
+                const totalPmEl = document.getElementById('total-pm');
+                if (totalPmEl) totalPmEl.textContent = totalPM;
+
+                const totalEmEl = document.getElementById('total-em');
+                if (totalEmEl) totalEmEl.textContent = totalEM;
+                
+                renderCSSCards();
+                connectSocketIO();
+                
+            } catch (err) {
+                console.error('❌ Error loading config:', err);
+                document.getElementById('css-grid').innerHTML = `
+                    <div class="loading">
+                        <p style="color: #e74c3c;">❌ Error loading configuration</p>
+                        <p style="color: #95a5a6; margin-top: 10px;">Make sure the server is running</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // Render CSS Cards
+        // ═══════════════════════════════════════════════════════════════════════════
+        
+        function renderCSSCards() {
+            const container = document.getElementById('css-grid');
+            container.innerHTML = '';
+
+            config.css.forEach(css => {
+                const card = document.createElement('div');
+                card.className = 'css-card';
+                card.style.setProperty('--css-color', css.color);
+                card.onclick = () => openSLD(css.id);
+
+                // Get counts
+                const invCount = css.inverters?.count || 0;
+                const pmCount = css.powerMeters?.count || 0;
+                const emCount = css.energyMeters?.count || 0;
+                
+                // Get protocols used
+                const protocols = new Set();
+                if (css.inverters?.connectionType) protocols.add(css.inverters.connectionType);
+                if (css.powerMeters?.connectionType) protocols.add(css.powerMeters.connectionType);
+                if (css.energyMeters?.connectionType) protocols.add(css.energyMeters.connectionType);
+                
+                // Build protocol tags HTML
+                let protocolTagsHTML = '';
+                protocols.forEach(p => {
+                    protocolTagsHTML += `<span class="css-protocol-tag ${p}">${p}</span>`;
+                });
+
+                // Get transformer rating number
+                const transformerValue = css.transformerRating ? css.transformerRating.split(' ')[0] : 'N/A';
+
+                card.innerHTML = `
+                    <div class="css-image-container">
+                        <img src="${css.image || ''}" alt="${css.name}" class="css-image" 
+                             onerror="this.parentElement.innerHTML='<div class=\\'placeholder-image\\'>🏭</div>'">
+                        <div class="css-overlay">
+                            <div class="css-overlay-text">Click to open Single Line Diagram</div>
+                        </div>
+                    </div>
+                    <div class="css-info">
+                        <div class="css-name">${css.name}</div>
+                        <div class="css-description">${css.description || ''}</div>
+                        <div class="css-stats">
+                            <div class="css-stat">
+                                <div class="value">${invCount}</div>
+                                <div class="label">Inverters</div>
+                            </div>
+                            <div class="css-stat">
+                                <div class="value">${pmCount}</div>
+                                <div class="label">Power M.</div>
+                            </div>
+                            <div class="css-stat">
+                                <div class="value">${emCount}</div>
+                                <div class="label">Energy M.</div>
+                            </div>
+                            <div class="css-stat">
+                                <div class="value">${transformerValue}</div>
+                                <div class="label">KVA</div>
+                            </div>
+                        </div>
+                        <div class="css-protocols">
+                            ${protocolTagsHTML}
+                        </div>
+                        <div class="click-indicator">
+                            <span>⚡</span>
+                            <span>Open SLD View</span>
+                            <span>→</span>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // Open SLD Page
+        // ═══════════════════════════════════════════════════════════════════════════
+        
+        function openSLD(cssId) {
+            showNotification(`Opening CSS ${cssId} SLD...`);
+            window.location.href = `monitoring.html?css=${cssId}`;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // WebSocket Connection
+        // ═══════════════════════════════════════════════════════════════════════════
+        
+        function connectSocketIO() {
+            socket = io();
+
+            socket.on('connect', function() {
+                console.log('✅ Socket.IO connected');
+                updateConnectionUI('connected', null);
+            });
+
+            socket.on('disconnect', function() {
+                console.log('❌ Socket.IO disconnected');
+                updateConnectionUI('disconnected', null);
+            });
+
+            socket.on('connect_error', function(err) {
+                console.error('Socket.IO error:', err);
+                updateConnectionUI('error', null);
+            });
+
+            socket.on('device_status', function(devices) {
+                updateConnectionUI('connected', devices);
+            });
+        }
+
+        function updateConnectionUI(status, devices) {
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            if (!dot || !text) return;
+            const badgesContainer = document.getElementById('protocol-badges');
+            
+            dot.classList.remove('online');
+            
+            switch(status) {
+                case 'connected':
+                    dot.classList.add('online');
+                    text.textContent = 'Connected';
+                    text.style.color = '#2ecc71';
+                    break;
+                case 'connecting':
+                    text.textContent = 'Connecting...';
+                    text.style.color = '#f39c12';
+                    break;
+                default:
+                    text.textContent = 'Disconnected';
+                    text.style.color = '#e74c3c';
+            }
+            
+            // Update protocol badges from device status array
+            if (devices && badgesContainer) {
+                badgesContainer.innerHTML = '';
+                devices.forEach(device => {
+                    const proto = device.type.toLowerCase();
+                    const isConnected = device.connected;
+                    const badge = document.createElement('span');
+                    badge.className = `protocol-badge ${proto} ${isConnected ? '' : 'offline'}`;
+                    badge.textContent = `${device.name} ${isConnected ? '✓' : '✗'}`;
+                    badgesContainer.appendChild(badge);
+                });
+            }
+        }
+
+        function showNotification(message) {
+            const existing = document.querySelectorAll('.notification');
+            existing.forEach(n => n.remove());
+
+            const notification = document.createElement('div');
+            notification.className = 'notification info';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', loadConfig);
+    </script>
+    <script src="js/connection-alert.js"></script>
+
+<script>
+/* IDS_AUTH_GUARD */
+(function () {
+  const API_BASE = "http://192.168.1.2:3000";
+  const LOGIN_URL = "http://192.168.1.2:3000/login";
+
+  async function ensureAuth() {
+    try {
+      const res = await fetch(API_BASE + '/api/auth/me', { credentials: 'include' });
+      if (!res.ok) {
+        window.location.replace(LOGIN_URL);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      window.location.replace(LOGIN_URL);
+      return false;
+    }
+  }
+
+  async function doLogout(e) {
+    try { if (e) e.preventDefault(); } catch {}
+    try {
+      await fetch(API_BASE + '/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch {}
+    window.location.replace(LOGIN_URL);
+    return false;
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    ensureAuth();
+    const btn = document.getElementById('idsLogout');
+    if (btn) btn.addEventListener('click', doLogout);
+  });
+
+  // BFCache/back-forward: re-check auth on restore
+  window.addEventListener('pageshow', function () {
+    ensureAuth();
+  });
+})();
+</script>
+
+</body>
+</html>

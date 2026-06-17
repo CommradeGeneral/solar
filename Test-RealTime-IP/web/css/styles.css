@@ -1,0 +1,436 @@
+/* ═══════════════════════════════════════════════
+   SOLAR SYSTEM MONITOR — Dark Modern Theme
+   ═══════════════════════════════════════════════ */
+
+/* Fonts are served locally (Cairo via cairo.css). No external Google Fonts. */
+
+:root {
+  --bg-primary: #0a0e17;
+  --bg-secondary: #111827;
+  --bg-card: #1a2234;
+  --border-color: #1e3a5f;
+  --accent-cyan: #00d4ff;
+  --accent-green: #00ff88;
+  --accent-red: #ff3b5c;
+  --accent-amber: #ffb800;
+  --accent-purple: #a855f7;
+  --text-primary: #e8edf5;
+  --text-muted: #6b7fa3;
+  --glow-cyan: 0 0 20px rgba(0, 212, 255, 0.3);
+  --glow-red: 0 0 20px rgba(255, 59, 92, 0.4);
+  --glow-green: 0 0 15px rgba(0, 255, 136, 0.25);
+  --svg-scale:0.9995;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background: var(--bg-primary);
+  font-family: 'Cairo', 'Outfit', sans-serif;
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(0, 212, 255, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(168, 85, 247, 0.03) 0%, transparent 50%),
+    var(--bg-primary);
+}
+
+/* ─── SVG Container ─── */
+.svg-container {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow: auto;
+  position: relative;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  /* Shift content to the right of the menu-tree (same hook other pages use) */
+  padding-left: var(--mt-offset, 0px);
+  transition: padding-left .28s cubic-bezier(.4, 0, .2, 1);
+}
+
+.svg-container svg {
+  width: calc(100% * var(--svg-scale));
+  height: calc(100% * var(--svg-scale));
+  max-width: none;
+  max-height: none;
+  display: block;
+  transform-origin: top left;
+}
+
+/* ─── Header (matches the other pages: menu button + logos + title + clock) ─── */
+.header {
+  flex: 0 0 auto;
+  position: sticky;
+  top: 0;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 24px;
+  padding-left: calc(24px + var(--mt-offset, 0px));
+  background: rgba(10, 14, 23, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-color);
+  z-index: 100;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+  transition: padding-left .28s cubic-bezier(.4, 0, .2, 1);
+}
+
+.header-right { display: flex; align-items: center; gap: 16px; }
+
+/* Push the clock to the far right of the header */
+.header .hc { margin-left: auto; }
+
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── Logos ── */
+/* Keep logos grouped and tight */
+.header-logos {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+  min-width: 0;
+}
+
+.logo1, .logo2, .logo3, .logo4 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: 60px;
+  margin-right: 0;
+  pointer-events: none;
+}
+
+.logo1 {
+  margin-left: 0;
+}
+
+.logo1 img, .logo2 img, .logo3 img, .logo4 img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.3));
+}
+
+/* ── Nav Link ── */
+.panel-controls {
+  margin-left: auto;
+}
+
+.nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 999px;
+  color: #f5f7ff;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: .3px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+  transition: transform .15s ease, background .15s ease, border-color .15s ease;
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 6px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(52,152,219,.0), rgba(52,152,219,.75), rgba(46,204,113,.75), rgba(46,204,113,.0));
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity .15s ease, transform .15s ease;
+}
+
+.nav-link:hover {
+  background: rgba(255,255,255,.06);
+  border-color: rgba(52,152,219,.35);
+  transform: translateY(-1px);
+}
+
+.nav-link:hover::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.nav-link:active { transform: translateY(0); }
+
+.nav-link:focus { outline: none; }
+.nav-link:focus-visible {
+  box-shadow: 0 0 0 3px rgba(52,152,219,.28);
+  border-color: rgba(52,152,219,.45);
+}
+
+.nav-link.active,
+.nav-link[aria-current="page"] {
+  background: rgba(52,152,219,.10);
+  border-color: rgba(52,152,219,.55);
+}
+
+.nav-icon {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 30%, rgba(46,204,113,.35), rgba(52,152,219,.18));
+  border: 1px solid rgba(255,255,255,.10);
+  font-size: 16px;
+  line-height: 1;
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,.25));
+}
+
+.panel-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent-cyan);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.panel-title::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  box-shadow: var(--glow-green);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.panel-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-badge.online {
+  background: rgba(0, 255, 136, 0.1);
+  color: var(--accent-green);
+  border: 1px solid rgba(0, 255, 136, 0.25);
+}
+
+.status-badge.offline {
+  background: rgba(255, 59, 92, 0.1);
+  color: var(--accent-red);
+  border: 1px solid rgba(255, 59, 92, 0.25);
+}
+
+.status-badge .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.status-badge.online .dot {
+  background: var(--accent-green);
+  box-shadow: var(--glow-green);
+}
+
+.status-badge.offline .dot {
+  background: var(--accent-red);
+  box-shadow: var(--glow-red);
+  animation: blink-red 1s ease-in-out infinite;
+}
+
+@keyframes blink-red {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-disconnect {
+  background: rgba(255, 59, 92, 0.1);
+  color: var(--accent-red);
+  border-color: rgba(255, 59, 92, 0.3);
+}
+
+.btn-disconnect:hover {
+  background: rgba(255, 59, 92, 0.2);
+  box-shadow: var(--glow-red);
+}
+
+.btn-reconnect {
+  background: rgba(0, 255, 136, 0.1);
+  color: var(--accent-green);
+  border-color: rgba(0, 255, 136, 0.3);
+}
+
+.btn-reconnect:hover {
+  background: rgba(0, 255, 136, 0.2);
+  box-shadow: var(--glow-green);
+}
+
+.btn-randomize {
+  background: rgba(168, 85, 247, 0.1);
+  color: var(--accent-purple);
+  border-color: rgba(168, 85, 247, 0.3);
+}
+
+.btn-randomize:hover {
+  background: rgba(168, 85, 247, 0.2);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+}
+
+/* ─── Connection Status Overlay (SVG) ─── */
+.device-overlay-group {
+  pointer-events: none;
+}
+
+/* Disconnected device: dim it + show the NOSIGNAL icon — but NO blur. */
+.disconnected {
+  filter: none;
+  opacity: 0.35;
+  transition: opacity 0.5s ease;
+}
+
+.connected {
+  filter: none;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+
+
+
+/* ─── Tooltip ─── */
+.device-tooltip {
+  position: fixed;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 14px;
+  color: var(--text-primary);
+  pointer-events: none;
+  z-index: 2000;
+  opacity: 0;
+  transition: opacity 0.2s;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.device-tooltip.visible {
+  opacity: 1;
+}
+
+/* ─── No Signal Overlay Icon ─── */
+.nosignal-icon {
+  animation: pulse-nosignal 2s ease-in-out infinite;
+}
+
+.nosignal-html-icon {
+  position: absolute;
+  z-index: 20;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+@keyframes pulse-nosignal {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 0.5; }
+}
+
+/* ─── Device Count Badges ─── */
+.device-stats {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.stat-item {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-item .label {
+  color: var(--text-muted);
+}
+
+.stat-item .count {
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.stat-item .count.green {
+  color: var(--accent-green);
+  background: rgba(0, 255, 136, 0.1);
+}
+
+.stat-item .count.red {
+  color: var(--accent-red);
+  background: rgba(255, 59, 92, 0.1);
+}

@@ -1,0 +1,232 @@
+/* ========================================
+   MODERN SUBMIT BUTTONS STYLES
+   ======================================== */
+
+/* Motor Control Buttons Container */
+.motor-control-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 20px;
+    margin: 15px 0;
+}
+
+/* Modern Submit Buttons Base Style */
+.btn-start,
+.btn-stop {
+    width: 100%;
+    max-width: 180px;
+    padding: 12px 24px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* START Button Styling */
+.btn-start {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    border: 2px solid rgba(16, 185, 129, 0.3);
+}
+
+.btn-start:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    border-color: rgba(16, 185, 129, 0.6);
+}
+
+.btn-start:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btn-start::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-start:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* STOP Button Styling */
+.btn-stop {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #ffffff;
+    border: 2px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn-stop:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    border-color: rgba(239, 68, 68, 0.6);
+}
+
+.btn-stop:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+.btn-stop::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-stop:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* Disabled State */
+.btn-start:disabled,
+.btn-stop:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-start:disabled:hover,
+.btn-stop:disabled:hover {
+    transform: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Motor Status Label */
+.motor-status {
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ef4444;
+    transition: all 0.3s ease;
+    text-align: center;
+    min-width: 120px;
+}
+
+.motor-status.running {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+    animation: pulse-glow 2s infinite;
+}
+
+.motor-status.stopped {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Pulse Glow Animation */
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);
+    }
+}
+
+/* Button Click Animation */
+@keyframes button-click {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(0.95);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.btn-start.clicked,
+.btn-stop.clicked {
+    animation: button-click 0.3s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .motor-control-buttons {
+        gap: 10px;
+        padding: 15px;
+    }
+    
+    .btn-start,
+    .btn-stop {
+        max-width: 100%;
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+    
+    .motor-status {
+        font-size: 11px;
+        padding: 6px 12px;
+        min-width: 100px;
+    }
+}
+
+/* Glow Effect on Active Motor */
+.feeder-card.motor-running .motor-control-buttons {
+    position: relative;
+}
+
+.feeder-card.motor-running .motor-control-buttons::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120%;
+    height: 120%;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+    border-radius: 20px;
+    animation: glow-pulse 2s infinite;
+    pointer-events: none;
+}
+
+@keyframes glow-pulse {
+    0%, 100% {
+        opacity: 0.5;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+}

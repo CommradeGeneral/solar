@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCADA - Multi-Trend</title>
+
+    <!-- Fonts / shared chrome -->
+    <link rel="stylesheet" href="/css/cairo.css">
+    <link rel="stylesheet" href="/css/menu-tree.css">
+    <link rel="stylesheet" href="/css/header-clock.css">
+
+    <!-- This page only -->
+    <link rel="stylesheet" href="/css/multitrend.css">
+
+    <!-- Chart.js (local vendor, no CDN) -->
+    <script src="/vendor/chart.umd.min.js"></script>
+</head>
+<body class="tr-body">
+    <!-- Side menu -->
+    <script src="/js/menu-tree-init.js"></script>
+    <aside id="menuTree" class="mt" aria-label="Project menu"></aside>
+    <div id="menuTreeBackdrop" class="mt-backdrop" hidden></div>
+
+    <!-- Header (matches EnergyMeter sizing) -->
+    <header class="header tr-header">
+        <button type="button" class="mt-open-btn" id="menuTreeOpenBtn" aria-label="Open menu"></button>
+        <div class="header-logos">
+            <div class="logo1"><img src="/images/Asorc.png" alt="Asorc"></div>
+            <div class="logo2"><img src="/images/Enppi.png" alt="Enppi"></div>
+            <div class="logo3"><img src="/images/infinty.png" alt="infinty"></div>
+        </div>
+        <div class="header-left">
+            <h1 class="page-title">Real-Time Multi-Trend</h1>
+        </div>
+        <div class="hc" data-header-clock>
+            <span class="hc-ico" aria-hidden="true">⏱</span>
+            <span class="hc-time" aria-label="Current time">--:--</span>
+        </div>
+        <div class="header-right"></div>
+    </header>
+
+    <!-- Body: tree + chart -->
+    <main class="tr-main">
+        <!-- Tag tree -->
+        <section class="tr-tree-panel" id="trTreePanel">
+            <div class="tr-tree-head">
+                <div class="tr-search-wrap">
+                    <span class="tr-search-ico">🔍</span>
+                    <input
+                        type="search"
+                        id="trSearch"
+                        class="tr-search"
+                        placeholder="Search tag or device"
+                        autocomplete="off"
+                    >
+                </div>
+                <div class="tr-tree-meta">
+                    <span id="trTreeStat">Loading tags...</span>
+                </div>
+            </div>
+            <div class="tr-tree-scroll" id="trTree" role="tree" aria-label="Tag tree"></div>
+        </section>
+
+        <!-- Chart -->
+        <section class="tr-chart-panel">
+            <div class="tr-toolbar">
+                <span class="tr-count" id="trCount">0/10</span>
+                <div class="tr-chips" id="trChips">
+                    <span class="tr-hint">Click any tag in the tree to plot it here</span>
+                </div>
+                <div class="tr-windows" id="trWindows" role="group" aria-label="Time window">
+                    <button class="tr-win" data-pts="60">1m</button>
+                    <button class="tr-win is-active" data-pts="300">5m</button>
+                    <button class="tr-win" data-pts="900">15m</button>
+                </div>
+                <div class="tr-controls">
+                    <button class="tr-btn tr-btn-text" id="trAxis" title="Toggle single / multi Y-axis">Single axis</button>
+                    <button class="tr-btn" id="trPause" title="Pause / Resume">⏸</button>
+                    <button class="tr-btn" id="trClear" title="Remove all tags">🗑</button>
+                </div>
+            </div>
+            <div class="tr-chart-wrap">
+                <div class="tr-empty" id="trEmpty">
+                    <div class="tr-empty-ico">📈</div>
+                    <p>No tags selected.</p>
+                    <p class="tr-empty-sub">Pick tags from the tree on the left to start a live trend.</p>
+                </div>
+                <canvas id="trCanvas"></canvas>
+                <div class="tr-grid" id="trGrid" hidden></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/multitrend.js"></script>
+    <script src="/js/menu-tree.js"></script>
+    <script src="/js/header-clock.js"></script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+/* ══════════════════════════════════════════════════════════════
+   SLD (Single Line Diagram) Styles
+   ══════════════════════════════════════════════════════════════ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* Reserve the scrollbar space like the other pages so the width matches and
+   the layout doesn't shift when navigating to/from this page. */
+html { scrollbar-gutter: stable; overflow-y: scroll; }
+
+body {
+    background: #1a1a2e;
+    overflow: hidden;
+    font-family: 'Segoe UI', Calibri, Arial, sans-serif;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* ── Header logo ── */
+#sld-header {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    z-index: 50;
+    pointer-events: auto;
+}
+
+#sld-header img {
+    height: 30px;
+    width: auto;
+    display: block;
+    opacity: 0.95;
+}
+
+/* ── Header layout + Dashboard button (override) ── */
+#sld-header {
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#sld-header .sld-header-logos {
+    position: absolute;
+    left: 8px;
+    top: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    pointer-events: none;
+}
+
+#sld-header .sld-header-logos img {
+    height: clamp(30px, 3.8vh, 46px);
+    width: auto;
+    display: block;
+    opacity: 0.95;
+}
+
+#sld-header .sld-header-logos img:first-child {
+    height: clamp(34px, 4.0vh, 50px);
+}
+
+#sld-header .sld-header-center {
+    pointer-events: auto; /* allow clicking dashboard link */
+
+}
+
+/* Page title — same gradient style as the Dashboard header h1 */
+#sld-header .sld-page-title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    pointer-events: none;
+    background: linear-gradient(135deg, #3498db, #2ecc71);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+#sld-header .nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    color: #f5f7ff;
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.3px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.10);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+    transition: transform .15s ease, background .15s ease, border-color .15s ease;
+}
+
+#sld-header .nav-link:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(52,152,219,0.35);
+    transform: translateY(-1px);
+}
+
+#sld-header .nav-link:active { transform: translateY(0); }
+
+#sld-header .nav-link:focus { outline: none; }
+#sld-header .nav-link:focus-visible {
+    box-shadow: 0 0 0 3px rgba(52,152,219,0.28);
+    border-color: rgba(52,152,219,0.45);
+}
+
+#sld-header .nav-icon {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: radial-gradient(circle at 30% 30%, rgba(46,204,113,0.35), rgba(52,152,219,0.18));
+    border: 1px solid rgba(255,255,255,0.10);
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* ── SVG Container ── */
+#sld-container {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#sld-container svg {
+    width: 100vw;
+    height: 100vh;
+    display: block;
+    touch-action: none; /* enable pointer pan/zoom without page scroll */
+    cursor: grab;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+#sld-container svg text,
+#sld-container svg tspan {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+
+#sld-container svg.is-panning { cursor: grabbing; }
+
+/* ── Live value styling ── */
+.sld-live {
+    fill: #4672c4;
+    transition: fill 0.2s;
+}
+
+/* ── Stale value (no update received) ── */
+.sld-stale {
+    fill: #999 !important;
+    opacity: 0.6;
+}

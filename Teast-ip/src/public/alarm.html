@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alarm Dashboard – SCADA</title>
+    <link rel="stylesheet" href="/static/css/alarm.css">
+    <link rel="stylesheet" href="/static/css/menu-tree.css">
+    <link rel="stylesheet" href="/static/css/header-clock.css">
+    <link rel="stylesheet" href="/static/css/cairo.css">
+
+</head>
+<body>
+
+    <!-- Menu state (must run before paint, as the first body child) -->
+    <script src="/static/js/menu-tree-init.js"></script>
+
+    <!-- ═══════════════ MENU TREE (sidebar) ═══════════════ -->
+    <aside class="mt" id="menuTree" aria-label="Main menu"></aside>
+    <div class="mt-backdrop" id="menuTreeBackdrop" hidden></div>
+
+    <!-- ═══════════════ TOAST ═══════════════ -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ═══════════════ HEADER ═══════════════ -->
+    <header class="page-header">
+        <button class="mt-open-btn" id="menuTreeOpenBtn" type="button" aria-label="Open menu"></button>
+        <div class="header-brand">
+            <div class="brand-icon">🔔</div>
+            <div class="brand-text">
+                <h1>Alarm</h1>
+            </div>
+        </div>
+
+        <div class="header-stats">
+            <div class="stat-pill pill-red">
+                <span class="pill-icon">🔔</span>
+                <span class="pill-label">Active</span>
+                <span class="pill-val" id="totalActiveCount">0</span>
+            </div>
+            <div class="stat-pill pill-orange">
+                <span class="pill-icon">⚠</span>
+                <span class="pill-label">Unacked</span>
+                <span class="pill-val" id="totalUnackedCount">0</span>
+            </div>
+            <div class="stat-pill pill-yellow">
+                <span class="pill-icon">🕓</span>
+                <span class="pill-label">Gone/Unacked</span>
+                <span class="pill-val" id="totalGoneUnackedCount">0</span>
+            </div>
+        </div>
+        <div class="hc" data-header-clock>
+            <span class="hc-ico" aria-hidden="true">⏱</span>
+            <span class="hc-time" aria-label="Current time">--:--</span>
+        </div>
+    </header>
+
+    <!-- ═══════════════ ACTION BAR ═══════════════ -->
+    <div class="action-bar">
+        <div class="tab-group">
+            <button class="tab-btn active" id="tabOnline" onclick="switchTab('online')">
+                <span class="tab-dot dot-green"></span>
+                Online Alarms
+                <span class="tab-count" id="onlineBadge">0</span>
+            </button>
+            <button class="tab-btn" id="tabHistory" onclick="switchTab('history')">
+                <span class="tab-dot dot-blue"></span>
+                History
+                <span class="tab-count" id="historyBadge">0</span>
+            </button>
+        </div>
+
+        <div class="action-group">
+            <button class="act-btn" onclick="refreshCurrent()">↻ Refresh</button>
+            <button class="act-btn btn-ack" id="ackAllBtn" onclick="acknowledgeAllVisible()">✓ Ack All</button>
+            <button class="act-btn btn-auto" id="autoRefreshBtn" onclick="toggleAutoRefresh()">
+                <span id="arIcon">⏸</span> <span id="arText">Auto: ON</span>
+            </button>
+            <button class="act-btn btn-filter" id="filterToggleBtn" onclick="toggleFilterPanel()">
+                ⚙ Filters <span class="filter-active-dot" id="filterDot"></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ═══════════════ FILTER PANEL ═══════════════ -->
+    <div class="filter-panel" id="filterPanel">
+        <div class="filter-panel-inner">
+            <div class="filter-grid">
+
+                <div class="filter-field">
+                    <label class="filter-label">🔧 Device Type</label>
+                    <select id="deviceTypeFilter" class="filter-select">
+                        <option value="">All Device Types</option>
+                        <option value="inverter">Inverter</option>
+                        <option value="energy">Energy Meter</option>
+                        <option value="relay">Protection Relay</option>
+                        <option value="weather">Weather Station</option>
+                    </select>
+                </div>
+
+                <div class="filter-field">
+                    <label class="filter-label">🏭 Device</label>
+                    <select id="deviceFilter" class="filter-select" disabled>
+                        <option value="">All Devices</option>
+                    </select>
+                </div>
+
+                <div class="filter-field">
+                    <label class="filter-label">🔍 Search</label>
+                    <input type="text" id="searchFilter" class="filter-input" placeholder="Name, text, class…">
+                </div>
+
+                <div class="filter-field">
+                    <label class="filter-label">⚠ Severity</label>
+                    <select id="severityFilter" class="filter-select">
+                        <option value="">All Severities</option>
+                        <option value="error">🔴 Error</option>
+                        <option value="alarm">🟠 Alarm</option>
+                        <option value="warning">🟡 Warning</option>
+                    </select>
+                </div>
+
+                <div class="filter-field">
+                    <label class="filter-label">⇄ Limit Mode</label>
+                    <select id="limitModeFilter" class="filter-select">
+                        <option value="">All Modes</option>
+                        <option value="High">High</option>
+                        <option value="Low">Low</option>
+                        <option value="Equal">Equal</option>
+                        <option value="Greater">Greater</option>
+                        <option value="Smaller">Smaller</option>
+                        <option value="GreaterOrEqual">≥ GreaterOrEqual</option>
+                        <option value="SmallerOrEqual">≤ SmallerOrEqual</option>
+                    </select>
+                </div>
+
+                <div class="filter-field">
+                    <label class="filter-label">🏷 Alarm Class</label>
+                    <input type="text" id="classFilter" class="filter-input" placeholder="e.g. Process, Safety…">
+                </div>
+
+                <div class="filter-field">
+                    <label class="filter-label">📅 From</label>
+                    <input type="datetime-local" id="startDateFilter" class="filter-input">
+                </div>
+
+                <div class="filter-field">
+                    <label class="filter-label">📅 To</label>
+                    <input type="datetime-local" id="endDateFilter" class="filter-input">
+                </div>
+
+            </div>
+
+            <div class="filter-footer">
+                <span class="filter-status" id="filterStatusText"></span>
+                <div class="filter-btns">
+                    <button class="fbtn fbtn-apply" onclick="applyFilters()">Apply Filters</button>
+                    <button class="fbtn fbtn-reset" onclick="resetFilters()">↺ Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+    <main class="page-content">
+
+        <!-- ── Online Tab ── -->
+        <div id="onlineTab" class="tab-content active">
+            <div class="table-toolbar">
+                <div class="toolbar-left">
+                    <h2 class="section-title">Online Alarms</h2>
+                    <span class="count-chip" id="onlineCount">0</span>
+                    <span class="filter-indicator" id="onlineFilterIndicator"></span>
+                </div>
+                <span class="last-update-label" id="lastUpdateTime"></span>
+            </div>
+
+            <div class="table-wrap">
+                <table class="alarm-table">
+                    <thead>
+                        <tr>
+                            <th class="col-state">State</th>
+                            <th class="col-id">ID</th>
+                            <th class="col-time">Triggered</th>
+                            <th class="col-text">Alarm Text</th>
+                            <th class="col-sev">Severity</th>
+                            <th class="col-class">Class</th>
+                            <th class="col-val">Value</th>
+                            <th class="col-action">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="onlineAlarmsTable">
+                        <tr><td colspan="8" class="cell-empty">Click Refresh to load alarms…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination-bar" id="onlinePagination"></div>
+        </div>
+
+        <!-- ── History Tab ── -->
+        <div id="historyTab" class="tab-content">
+            <div class="table-toolbar">
+                <div class="toolbar-left">
+                    <h2 class="section-title">Alarm History</h2>
+                    <span class="count-chip" id="historyCount">0</span>
+                    <span class="filter-indicator" id="historyFilterIndicator"></span>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table class="alarm-table">
+                    <thead>
+                        <tr>
+                            <th class="col-id">ID</th>
+                            <th class="col-text">Alarm Text</th>
+                            <th class="col-sev">Severity</th>
+                            <th class="col-class">Class</th>
+                            <th class="col-mode">Limit Mode</th>
+                            <th class="col-val">Trigger Val</th>
+                            <th class="col-time">Triggered</th>
+                            <th class="col-time">Acknowledged</th>
+                            <th class="col-ack-by">Acked By</th>
+                            <th class="col-time">Ended</th>
+                            <th class="col-dur">Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyAlarmsTable">
+                        <tr><td colspan="11" class="cell-empty">Click Refresh to load history…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination-bar" id="historyPagination"></div>
+        </div>
+
+    </main>
+
+    <script src="/static/vendor/xlsx.full.min.js"></script>
+    <script src="/static/js/menu-tree.js"></script>
+    <script src="/static/js/alarm.js"></script>
+        <script src="/static/js/header-clock.js"></script>
+
+    
+
+</body>
+</html>
